@@ -1,0 +1,31 @@
+[project]
+name="bods-uk-psc-pipeline"
+description = "Web application for dynamic querying of APIs to explorer beneficial ownership data"
+version = "0.1"
+requires-python = '>=3.10'
+dependencies = ["bodspipelines @ git+https://github.com/openownership/bodspipelines.git@bods_0_4_new"]
+readme="README.md"
+license = {text= "AGPLv3"}
+authors = [
+  { name = 'Open Ownership', email='code@opendataservices.coop' },
+]
+
+[project.urls]
+homepage = 'https://github.com/openownership/bods-uk-psc-pipeline'
+documentation = 'https://github.com/openownership/bods-uk-psc-pipeline'
+repository = 'https://github.com/openownership/bods-uk-psc-pipeline'
+
+[tool.setuptools]
+packages = ["uk_psc_pipeline"]
+py-modules = ["__init__"]
+
+[tool.ruff]
+lint.select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
