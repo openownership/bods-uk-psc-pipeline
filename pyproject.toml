@@ -1,6 +1,6 @@
 [project]
-name="bods-uk-psc-pipeline"
-description = "Web application for dynamic querying of APIs to explorer beneficial ownership data"
+name="bodsukpscpipeline"
+description = "Pipeline for producing Beneficial Ownership Data Standard (BODS) statements from UK Companies House People with significant control (PSC) data."
 version = "0.1"
 requires-python = '>=3.10'
 dependencies = ["bodspipelines @ git+https://github.com/openownership/bodspipelines.git@bods_0_4_new"]
