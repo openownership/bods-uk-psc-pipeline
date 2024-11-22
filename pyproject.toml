@@ -16,7 +16,7 @@ documentation = 'https://github.com/openownership/bods-uk-psc-pipeline'
 repository = 'https://github.com/openownership/bods-uk-psc-pipeline'
 
 [tool.setuptools]
-packages = ["uk_psc_pipeline"]
+packages = ["bodsukpscpipeline"]
 py-modules = ["__init__"]
 
 [tool.ruff]
