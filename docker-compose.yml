@@ -1,0 +1,32 @@
+services:
+  bods_pipeline_uk_psc:
+    image: bods_pipeline_uk_psc:latest
+    environment:
+      - BODS_AWS_REGION
+      - BODS_AWS_ACCESS_KEY_ID
+      - BODS_AWS_SECRET_ACCESS_KEY
+      - ELASTICSEARCH_HOST
+      - ELASTICSEARCH_PORT
+      - ELASTICSEARCH_PROTOCOL
+      - UK_PSC_KINESIS_STREAM
+      - BODS_KINESIS_STREAM
+      - LOCAL_DATA_DIRECTORY
+    volumes:
+      - ./code:/app/venv
+      - ./data:/app/data
+    restart: always
+    depends_on:
+      - bods_pipeline_uk_psc_es
+
+  bods_pipeline_uk_psc_es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    environment:
+      - 'discovery.type=single-node'
+      - 'cluster.name=gleif-elasticsearch'
+      - 'bootstrap.memory_lock=true'
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - 'xpack.security.enabled=false'
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200

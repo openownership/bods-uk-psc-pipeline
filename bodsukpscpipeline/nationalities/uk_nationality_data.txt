@@ -1,0 +1,224 @@
+Afghan,AF
+Albanian,AL
+Algerian,DZ
+American,US
+Andorran,AD
+Angolan,AO
+Anguillan,AI
+Citizen of Antigua and Barbuda,AG
+Argentine,AR
+Armenian,AM
+Australian,AU
+Austrian,AT
+Azerbaijani,AZ
+Bahamian,BS
+Bahraini,BH
+Bangladeshi,BD
+Barbadian,BB
+Belarusian,BY
+Belgian,BE
+Belizean,BZ
+Beninese,BJ
+Bermudian,BM
+Bhutanese,BT
+Bolivian,BO
+Citizen of Bosnia and Herzegovina,BA
+Botswanan,BW
+Brazilian,BR
+British	British Virgin Islander,VG
+Bruneian,BN
+Bulgarian,BG
+Burkinan,BF
+Burmese,MM
+Burundian,BI
+Cambodian,KH
+Cameroonian,CM
+Canadian,CA
+Cape Verdean,CV
+Cayman Islander,KY
+Central African,CF
+Chadian,TD
+Chilean,CL
+Chinese,CN
+Colombian,CO
+Comoran,KM
+Congolese (Congo),CG
+Congolese (DRC),CD
+Cook Islander,CK
+Costa Rican,CR
+Croatian,HR
+Cuban,CU
+Cymraes,GB
+Cymro,GB
+Cypriot,CY
+Czech,CZ
+Danish,DK
+Djiboutian,DJ
+Dominican,DM
+Citizen of the Dominican Republic,DO
+Dutch,NL
+East Timorese,TL
+Ecuadorean,EC
+Egyptian,EG
+Emirati,AE
+English,GB
+Equatorial Guinean,GQ
+Eritrean,ER
+Estonian,EE
+Ethiopian,ET
+Faroese,FO
+Fijian,FJ
+Filipino,PH
+Finnish,FI
+French,FR
+Gabonese,GA
+Gambian,GM
+Georgian,GE
+German,DE
+Ghanaian,GH
+Gibraltarian,GI
+Greek,GR
+Greenlandic,GL
+Grenadian,GD
+Guamanian,GU
+Guatemalan,GT
+Citizen of Guinea-Bissau,GW
+Guinean,GN
+Guyanese,GY
+Haitian,HT
+Honduran,HN
+Hong Konger,HK
+Hungarian,HU
+Icelandic,IE
+Indian,IN
+Indonesian,ID
+Iranian,IR
+Iraqi,IQ
+Irish,IE
+Israeli,IL
+Italian,IT
+Ivorian,CI
+Jamaican,JM
+Japanese,JP
+Jordanian,JO
+Kazakh,KZ
+Kenyan,KE
+Kittitian,KN
+Citizen of Kiribati,KI
+Kosovan,XK
+Kuwaiti,KW
+Kyrgyz,KG
+Lao,LA
+Latvian,LV
+Lebanese,LB
+Liberian,LR
+Libyan,LY
+Liechtenstein citizen,LI
+Lithuanian,LT
+Luxembourger,LU
+Macanese,MO
+Macedonian,MK
+Malagasy,MG
+Malawian,MW
+Malaysian,MY
+Maldivian,MV
+Malian,ML
+Maltese,MT
+Marshallese,MH
+Martiniquais,MQ
+Mauritanian,MR
+Mauritian,MU
+Mexican,MX
+Micronesian,FM
+Moldovan,MD
+Monegasque,MC
+Mongolian,MN
+Montenegrin,ME
+Montserratian,MS
+Moroccan,MA
+Mosotho,LS
+Mozambican,MZ
+Namibian,NA
+Nauruan,NR
+Nepalese,NP
+New Zealander,NZ
+Nicaraguan,NI
+Nigerian,NG
+Nigerien,NE
+Niuean,NU
+North Korean,KP
+Northern Irish,GB
+Norwegian,NO
+Omani,OM
+Pakistani,PK
+Palauan,PW
+Palestinian,PS
+Panamanian,PA
+Papua New Guinean,PG
+Paraguayan,PY
+Peruvian,PE
+Pitcairn Islander,PN
+Polish,PL
+Portuguese,PT
+Prydeinig,GB
+Puerto Rican,PR
+Qatari,QA
+Romanian,RO
+Russian,RU
+Rwandan,RW
+Salvadorean,SV
+Sammarinese,SM
+Samoan,WS
+Sao Tomean,ST
+Saudi Arabian,SA
+Scottish,GB
+Senegalese,SN
+Serbian,RS
+Citizen of Seychelles,SC
+Sierra Leonean,SL
+Singaporean,SG
+Slovak,SK
+Slovenian,SI
+Solomon Islander,SB
+Somali,SO
+South African,ZA
+South Korean,KR
+South Sudanese,SS
+Spanish,ES
+Sri Lankan,LK
+St Helenian,SH
+St Lucian,LC
+Stateless,XX
+Sudanese,SD
+Surinamese,SR
+Swazi,SZ
+Swedish,SE
+Swiss,CH
+Syrian,SY
+Taiwanese,TW
+Tajik,TJ
+Tanzanian,TZ
+Thai,TH
+Togolese,TG
+Tongan,TO
+Trinidadian,TT
+Tristanian,SH
+Tunisian,TN
+Turkish,TR
+Turkmen,TM
+Turks and Caicos Islander,TC
+Tuvaluan,TV
+Ugandan,UG
+Ukrainian,UA
+Uruguayan,UY
+Uzbek,UZ
+Vatican citizen,VA
+Citizen of Vanuatu,VU
+Venezuelan,VE
+Vietnamese,VN
+Vincentian,VC
+Wallisian,WF
+Welsh,GB
+Yemeni,YE
+Zambian,ZM
+Zimbabwean,ZW

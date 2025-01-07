@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+source env.sh; docker-compose run bods_pipelines_uk_psc bash -c "source venv/bin/activate && bin/run_ingest_updates"

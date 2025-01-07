@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+source env.sh; docker-compose run bods_pipeline_uk_psc bin/install_pipeline.sh

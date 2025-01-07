@@ -8,77 +8,64 @@ from bodspipelines.infrastructure.pipeline import Source, Stage, Pipeline
 from bodspipelines.infrastructure.inputs import KinesisInput
 from bodspipelines.infrastructure.storage import Storage
 from bodspipelines.infrastructure.clients.elasticsearch_client import ElasticsearchClient
-from bodspipelines.infrastructure.clients.redis_client import RedisClient
 from bodspipelines.infrastructure.outputs import Output, OutputConsole, NewOutput, KinesisOutput
 from bodspipelines.infrastructure.processing.bulk_data import BulkData
-from bodspipelines.infrastructure.processing.xml_data import XMLData
+from bodspipelines.infrastructure.processing.csv_data import CSVData
 from bodspipelines.infrastructure.processing.json_data import JSONData
 from bodspipelines.infrastructure.updates import ProcessUpdates
 
-from bodspipelines.pipelines.gleif.indexes import gleif_index_properties
 from bodspipelines.infrastructure.indexes import bods_index_properties
-
-from bodspipelines.pipelines.gleif.transforms import Gleif2Bods, AddContentDate, RemoveEmptyExtension
-from bodspipelines.pipelines.gleif.indexes import (lei_properties, rr_properties, repex_properties,
-                                          match_lei, match_rr, match_repex,
-                                          id_lei, id_rr, id_repex)
-from bodspipelines.pipelines.gleif.utils import gleif_download_link, GLEIFData, identify_gleif
-from bodspipelines.pipelines.gleif.updates import GleifUpdates
 from bodspipelines.infrastructure.utils import identify_bods, load_last_run, save_run
 
-# Defintion of LEI-CDF v3.1 XML date source
-lei_source = Source(name="lei",
-                    origin=BulkData(display="LEI-CDF v3.1",
-                       data=GLEIFData(url="https://goldencopy.gleif.org/api/v2/golden-copies/publishes/lei2/latest",
-                                      data_date="2024-01-01"),
-                              size=41491,
-                              directory="lei-cdf"),
-                    datatype=XMLData(item_tag="LEIRecord",
-                                     namespace={"lei": "http://www.gleif.org/data/schema/leidata/2016",
-                                          "gleif": "http://www.gleif.org/data/schema/golden-copy/extensions/1.0"},
-                                     filter=['NextVersion', 'Extension']))
+#from bodspipelines.pipelines.gleif.indexes import gleif_index_properties
+#from bodspipelines.pipelines.gleif.transforms import Gleif2Bods, AddContentDate, RemoveEmptyExtension
+#from bodspipelines.pipelines.gleif.indexes import (lei_properties, rr_properties, repex_properties,
+#                                          match_lei, match_rr, match_repex,
+#                                          id_lei, id_rr, id_repex)
+#from bodspipelines.pipelines.gleif.utils import gleif_download_link, GLEIFData, identify_gleif
+#from bodspipelines.pipelines.gleif.updates import GleifUpdates
+#from bodspipelines.infrastructure.utils import identify_bods, load_last_run, save_run
 
-# Defintion of RR-CDF v2.1 XML date source
-rr_source = Source(name="rr",
-                   origin=BulkData(display="RR-CDF v2.1",
-                       data=GLEIFData(url="https://goldencopy.gleif.org/api/v2/golden-copies/publishes/rr/latest",
-                                      data_date="2024-01-01"),
-                       size=2823,
-                       directory="rr-cdf"),
-                   datatype=XMLData(item_tag="RelationshipRecord",
-                            namespace={"rr": "http://www.gleif.org/data/schema/rr/2016",
-                                       "gleif": "http://www.gleif.org/data/schema/golden-copy/extensions/1.0"},
-                            filter=['NextVersion', ]))
+from .indexes import uk_psc_index_properties
+from .source import UKCOHSource
+from .utils import UKCOHData, identify_uk_coh
+from .transforms import AddContentDate
 
-# Defintion of Reporting Exceptions v2.1 XML date source
-repex_source = Source(name="repex",
-                      origin=BulkData(display="Reporting Exceptions v2.1",
-                      data=GLEIFData(url="https://goldencopy.gleif.org/api/v2/golden-copies/publishes/repex/latest",
-                                     data_date="2024-01-01"),
-                           size=3954,
-                           directory="rep-ex"),
-                      datatype=XMLData(item_tag="Exception",
-                                 header_tag="Header",
-                                 namespace={"repex": "http://www.gleif.org/data/schema/repex/2016",
-                                            "gleif": "http://www.gleif.org/data/schema/golden-copy/extensions/1.0"},
-                                 filter=['NextVersion', ]))
+# Defintion of CH basic company data source
+company_source = Source(name="company-data",
+                        origin=BulkData(display="UK Basic Company Data",
+                                        data=UKCOHData(url="https://download.companieshouse.gov.uk/BasicCompanyData-2024-11-01-part1_7.zip",
+                                                       update_frequency="monthly"),
+                                        size=6400,
+                                        directory="uk-companies"),
+                        datatype=CSVData()
+                       )
 
-# Easticsearch storage for GLEIF data
-gleif_storage = ElasticsearchClient(indexes=gleif_index_properties)
+# Defintion of CH PSC data source
+psc_source = Source(name="psc-data",
+                    origin=BulkData(display="UK People with significant control (PSC) Data",
+                                    data=UKCOHData(url="https://download.companieshouse.gov.uk/psc-snapshot-2024-11-23_1of28.zip",
+                                                   update_frequency="daily"),
+                                    size=6500,
+                                    directory="uk-psc"),
+                    datatype=JSONData()
+                   )
+
+# Easticsearch storage for UK PSC data
+uk_psc_storage = ElasticsearchClient(indexes=uk_psc_index_properties)
 
 # GLEIF data: Store in Easticsearch and output new to Kinesis stream
-output_new = NewOutput(storage=Storage(storage=gleif_storage),
-                       output=KinesisOutput(stream_name=os.environ.get('GLEIF_KINESIS_STREAM')))
+output_new = NewOutput(storage=Storage(storage=uk_psc_storage),
+                       output=KinesisOutput(stream_name=os.environ.get('UK_PSC_KINESIS_STREAM')))
 
-# Definition of GLEIF data pipeline ingest stage
+# Definition of UK PSC data pipeline ingest stage
 ingest_stage = Stage(name="ingest",
-              sources=[lei_source, rr_source, repex_source],
-              processors=[AddContentDate(identify=identify_gleif),
-                          RemoveEmptyExtension(identify=identify_gleif)],
+              sources=[company_source, psc_source],
+              processors=[AddContentDate(identify=identify_uk_coh)],
               outputs=[output_new])
 
-# Kinesis stream of GLEIF data from ingest stage
-gleif_source = Source(name="gleif",
+# Kinesis stream of UK PSC data from ingest stage
+uk_psc_source = Source(name="uk-psc",
                       origin=KinesisInput(stream_name=os.environ.get('GLEIF_KINESIS_STREAM')),
                       datatype=JSONData())
 
@@ -90,21 +77,22 @@ bods_output_new = NewOutput(storage=Storage(storage=bods_storage),
                             output=KinesisOutput(stream_name=os.environ.get('BODS_KINESIS_STREAM')),
                             identify=identify_bods)
 
-# Definition of GLEIF data pipeline transform stage
+# Definition of UK PSC data pipeline transform stage
 transform_stage = Stage(name="transform",
-              sources=[gleif_source],
-              processors=[ProcessUpdates(id_name='XI-LEI',
-                                         transform=Gleif2Bods(identify=identify_gleif),
+              sources=[uk_psc_source],
+              processors=[ProcessUpdates(id_name='GB-COH',
+                                         transform=UKCOHSource(), # Gleif2Bods(identify=identify_gleif),
                                          storage=Storage(storage=bods_storage),
-                                         updates=GleifUpdates())],
+                                         #updates=GleifUpdates()
+                                         )],
               outputs=[bods_output_new])
 
-# Definition of GLEIF data pipeline
-pipeline = Pipeline(name="gleif", stages=[ingest_stage, transform_stage])
+# Definition of UK PSC data pipeline
+pipeline = Pipeline(name="uk-psc", stages=[ingest_stage, transform_stage])
 
 # Setup storage indexes
 async def setup_indexes():
-    await gleif_storage.setup_indexes()
+    await uk_psc_storage.setup_indexes()
     await bods_storage.setup_indexes()
 
 # Load run

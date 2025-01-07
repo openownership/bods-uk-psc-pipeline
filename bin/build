@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+eval $(ssh-agent)
+ssh-add ~/.ssh/id_rsa
+DOCKER_BUILDKIT=1 docker build --no-cache -t bods_pipeline_uk_psc:latest --ssh default .
