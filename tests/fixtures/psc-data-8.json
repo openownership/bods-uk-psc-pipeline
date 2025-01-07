@@ -1,0 +1,107 @@
+[
+  {
+    "company_number": "04120481",
+    "data": {
+      "address": {
+        "address_line_1": "Park, Hercules Way",
+        "country": "United Kingdom",
+        "locality": "Watford",
+        "postal_code": "HERTFORDSHIRE",
+        "premises": "Building 600 Leavesden Business"
+      },
+      "etag": "0f21f400705c1c6deb79fffa396240e147d954ae",
+      "identification": {
+        "country_registered": "England And Wales",
+        "legal_authority": "United Kingdom (England And Wales)",
+        "legal_form": "Limited By Shares",
+        "place_registered": "Companies House",
+        "registration_number": "03530981"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/04120481/persons-with-significant-control/corporate-entity/m5XNR_-nKtmMDh9BkcfpD7Pzkic"
+      },
+      "name": "Clientlogic Holding Limited",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent",
+        "voting-rights-75-to-100-percent",
+        "right-to-appoint-and-remove-directors"
+      ],
+      "notified_on": "2016-04-06"
+    },
+    "ContentDate": "2024-12-19"
+  },
+  {
+    "company_number": "03136191",
+    "data": {
+      "address": {
+        "address_line_1": "Alexandra Road",
+        "country": "England",
+        "locality": "Enfield",
+        "postal_code": "EN3 7EH",
+        "premises": "Unit 3"
+      },
+      "country_of_residence": "England",
+      "date_of_birth": {
+        "month": 10,
+        "year": 1957
+      },
+      "etag": "d0e5039a855606ff83a700de5621c16aec37efe6",
+      "kind": "individual-person-with-significant-control",
+      "links": {
+        "self": "/company/03136191/persons-with-significant-control/individual/55y0_U-Q2wwTXDXh6mmo0BJPpM8"
+      },
+      "name": "Mr. Michael Stanley Bunyan",
+      "name_elements": {
+        "forename": "Michael",
+        "middle_name": "Stanley",
+        "surname": "Bunyan",
+        "title": "Mr."
+      },
+      "nationality": "British",
+      "natures_of_control": [
+        "ownership-of-shares-25-to-50-percent"
+      ],
+      "notified_on": "2016-11-01"
+    },
+    "ContentDate": "2024-12-19"
+  },
+  {
+    "company_number": "07880581",
+    "data": {
+      "address": {
+        "address_line_1": "10, Waterside Court",
+        "address_line_2": "Albany Street",
+        "country": "United Kingdom",
+        "locality": "Newport",
+        "postal_code": "NP20 5NT",
+        "premises": "Summit House",
+        "region": "Gwent"
+      },
+      "country_of_residence": "Wales",
+      "date_of_birth": {
+        "month": 6,
+        "year": 1955
+      },
+      "etag": "f1ed5574fbe7c0d1c52ba93b77bd4810a68f5d6c",
+      "kind": "individual-person-with-significant-control",
+      "links": {
+        "self": "/company/07880581/persons-with-significant-control/individual/2WsTqt0-Op6umaRp0uM6NR-3Kog"
+      },
+      "name": "Mr Derek Salter",
+      "name_elements": {
+        "forename": "Derek",
+        "surname": "Salter",
+        "title": "Mr"
+      },
+      "nationality": "British",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent",
+        "voting-rights-75-to-100-percent"
+      ],
+      "notified_on": "2016-04-06"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

@@ -1,0 +1,4 @@
+[
+{"company_number":"07102351","data":{"address":{"address_line_1":"No.18 In Fucheng Road","address_line_2":"Haidian District","country":"China","locality":"Beijing, Postcode:100048","premises":"Huarong Plaza"},"etag":"75451bcb0f1872327f860c7eb8623bc455d7d78b","identification":{"legal_authority":"People'S Republic Of China","legal_form":"Government Department"},"kind":"legal-person-person-with-significant-control","links":{"self":"/company/07102351/persons-with-significant-control/legal-person/I9Y9flc5ndlcZRtXPL03fjn2hDo"},"name":"State Administration Of Foreign Exchange","natures_of_control":["ownership-of-shares-75-to-100-percent"],"notified_on":"2016-04-06"}, "ContentDate": "2024-12-19"},
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

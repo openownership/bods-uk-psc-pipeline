@@ -1,0 +1,34 @@
+[
+  {
+    "company_number": "02847483",
+    "data": {
+      "address": {
+        "address_line_1": "Washington Street",
+        "country": "United States",
+        "locality": "St. Paul",
+        "premises": "385",
+        "region": "Minnesota"
+      },
+      "etag": "807633f19ded9b380cf884c110616b38e8c3dbaf",
+      "identification": {
+        "country_registered": "Minnesota, Usa",
+        "legal_authority": "Organized Under The Laws Of Minnesota, State Of Domicile Or Port Of Entry Minnesota, Country Of Domicile Us",
+        "legal_form": "Private",
+        "place_registered": "Connecticut",
+        "registration_number": "41-0406690"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/02847483/persons-with-significant-control/corporate-entity/YIVGZxjcS8tcf-5WdYZBtTTW-so"
+      },
+      "name": "St. Paul Fire & Marine Insurance Company",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent",
+        "voting-rights-75-to-100-percent"
+      ],
+      "notified_on": "2016-07-01"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

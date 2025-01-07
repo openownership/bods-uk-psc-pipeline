@@ -1,0 +1,31 @@
+[
+  {
+    "company_number": "04609051",
+    "data": {
+      "address": {
+        "address_line_1": "Chelford Court",
+        "address_line_2": "Robjohns Road",
+        "country": "England",
+        "locality": "Chelmsford",
+        "postal_code": "CM1 3AG",
+        "premises": "Unit C"
+      },
+      "etag": "9a871e988b88e21faf9cfda5aba344b5e539b1d4",
+      "identification": {
+        "legal_authority": "English Law",
+        "legal_form": "Limited Company"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/04609051/persons-with-significant-control/corporate-entity/XZ5ewy79htdkXc01WPUKUw0vfn0"
+      },
+      "name": "London Environmental Group Services Ltd",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent"
+      ],
+      "notified_on": "2016-04-06"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

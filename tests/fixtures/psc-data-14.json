@@ -1,0 +1,33 @@
+[
+  {
+    "company_number": "07731393",
+    "data": {
+      "address": {
+        "address_line_1": "Epsom Avenue, Stanley Green Trading Estate",
+        "address_line_2": "Handforth",
+        "country": "England",
+        "locality": "Wilmslow",
+        "postal_code": "SK9 3RN",
+        "premises": "Pets At Home Limited",
+        "region": "Cheshire"
+      },
+      "etag": "110db12be6c2d7aa745f0a0e62eb38a296a1dec1",
+      "identification": {
+        "legal_authority": "Companies Act 2006",
+        "legal_form": "Limited By Shares"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/07731393/persons-with-significant-control/corporate-entity/-iBI6UKj4US1_nH3eVDHZ160gA4"
+      },
+      "name": "Companion Care (Services) Limited",
+      "natures_of_control": [
+        "ownership-of-shares-25-to-50-percent",
+        "voting-rights-25-to-50-percent"
+      ],
+      "notified_on": "2016-04-06"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

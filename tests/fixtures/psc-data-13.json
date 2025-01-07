@@ -1,0 +1,31 @@
+[
+  {
+    "company_number": "05881142",
+    "data": {
+      "address": {
+        "address_line_1": "Geneva Way",
+        "address_line_2": "Leads Road",
+        "country": "England",
+        "locality": "Hull",
+        "postal_code": "HU7 0DG",
+        "premises": "Head Office"
+      },
+      "etag": "bf53b9efdcedee0bd49e3ce9068434f22d9b346d",
+      "identification": {
+        "legal_authority": "Companies Act 1985",
+        "legal_form": "Limited Compamy"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/05881142/persons-with-significant-control/corporate-entity/AwlS9z80m1jW-ZMaRWcQbfyHmlk"
+      },
+      "name": "Hull Citycare (Intermediate 2) Ltd",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent"
+      ],
+      "notified_on": "2016-07-18"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

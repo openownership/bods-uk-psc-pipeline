@@ -1,0 +1,4 @@
+[
+{"company_number":"02443921","data":{"ceased":false,"description":"super-secure-persons-with-significant-control","etag":"ba450b740ef93e8918e9daf2064f14738d07ea18","kind":"super-secure-person-with-significant-control","links":{"self":"/company/02443921/persons-with-significant-control/super-secure/NcZQQA0LMrXYV1u0fGRHLrGIL_I"}}, "ContentDate": "2024-12-19"},
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

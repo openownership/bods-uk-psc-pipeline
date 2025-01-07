@@ -1,0 +1,29 @@
+[
+  {
+    "company_number": "01507964",
+    "data": {
+      "address": {
+        "address_line_1": "Weinbergstrasse 5",
+        "country": "Switzerland",
+        "locality": "Zug",
+        "premises": "0"
+      },
+      "etag": "d480bda8c7763d644ee9ef6c0119225efb1cea0d",
+      "identification": {
+        "legal_authority": "Limited Liability",
+        "legal_form": "Ag"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/01507964/persons-with-significant-control/corporate-entity/OGSIqcY0YwpEmcz9iUdUt9gxo2I"
+      },
+      "name": "Draeger Finanz Ag",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent"
+      ],
+      "notified_on": "2016-07-01"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

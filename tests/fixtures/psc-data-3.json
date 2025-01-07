@@ -1,0 +1,4 @@
+[
+{"company_number":"08810260","data":{"address":{"address_line_1":"Godmans Lane","address_line_2":"Kirk Ella","locality":"Hull","postal_code":"HU10 7NY","premises":"Alvenga"},"country_of_residence":"England","date_of_birth":{"month":8,"year":1951},"etag":"224fe8afa8a6ff381ea0069dac5c6d4c995f15b2","kind":"individual-person-with-significant-control","links":{"self":"/company/08810260/persons-with-significant-control/individual/Q4obUUwOO7TeElahEzWmRh2QKxs"},"name":"Mr Michael Charles Saunders","name_elements":{"forename":"Michael","middle_name":"Charles","surname":"Saunders","title":"Mr"},"nationality":"British","natures_of_control":["ownership-of-shares-75-to-100-percent","voting-rights-75-to-100-percent"],"notified_on":"2016-04-06"}, "ContentDate": "2024-12-19"},
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

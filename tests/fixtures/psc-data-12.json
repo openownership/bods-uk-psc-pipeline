@@ -1,0 +1,30 @@
+[
+  {
+    "company_number": "10308743",
+    "data": {
+      "address": {
+        "locality": "London",
+        "postal_code": "WC2A 1LS",
+        "premises": "22 Chancery Lane"
+      },
+      "etag": "00224c6b5f392b059b973ca3d06816b4f9aa60e3",
+      "identification": {
+        "legal_authority": "Limited Company",
+        "legal_form": "Uk Companies Act 2006"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/10308743/persons-with-significant-control/corporate-entity/ecFgPJLcM8iLRCeq8C3xduyde4U"
+      },
+      "name": "Stddminvest Limited",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent",
+        "voting-rights-75-to-100-percent",
+        "right-to-appoint-and-remove-directors"
+      ],
+      "notified_on": "2016-08-02"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

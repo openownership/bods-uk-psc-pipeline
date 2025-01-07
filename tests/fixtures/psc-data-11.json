@@ -1,0 +1,39 @@
+[
+  {
+    "company_number": "10308742",
+    "data": {
+      "address": {
+        "country": "Poland",
+        "locality": "Lapice",
+        "postal_code": "83-300",
+        "premises": "5 Sloneczna"
+      },
+      "ceased_on": "2018-02-27",
+      "country_of_residence": "Poland",
+      "date_of_birth": {
+        "month": 10,
+        "year": 1979
+      },
+      "etag": "c03ad65128fb544bc700bfcdf7e0c06cbd6006f2",
+      "kind": "individual-person-with-significant-control",
+      "links": {
+        "self": "/company/10308742/persons-with-significant-control/individual/w4N_sH7yjfQmrQl93tx5yu7WW50"
+      },
+      "name": "Karol Kuczkowski",
+      "name_elements": {
+        "forename": "Karol",
+        "surname": "Kuczkowski"
+      },
+      "nationality": "Polish",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent",
+        "voting-rights-75-to-100-percent",
+        "right-to-appoint-and-remove-directors",
+        "significant-influence-or-control"
+      ],
+      "notified_on": "2016-08-02"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]

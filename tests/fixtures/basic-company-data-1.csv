@@ -1,0 +1,15 @@
+CompanyName, CompanyNumber,RegAddress.CareOf,RegAddress.POBox,RegAddress.AddressLine1, RegAddress.AddressLine2,RegAddr
+ess.PostTown,RegAddress.County,RegAddress.Country,RegAddress.PostCode,CompanyCategory,CompanyStatus,CountryOfOrigin,Di
+ssolutionDate,IncorporationDate,Accounts.AccountRefDay,Accounts.AccountRefMonth,Accounts.NextDueDate,Accounts.LastMade
+UpDate,Accounts.AccountCategory,Returns.NextDueDate,Returns.LastMadeUpDate,Mortgages.NumMortCharges,Mortgages.NumMortO
+utstanding,Mortgages.NumMortPartSatisfied,Mortgages.NumMortSatisfied,SICCode.SicText_1,SICCode.SicText_2,SICCode.SicTe
+xt_3,SICCode.SicText_4,LimitedPartnerships.NumGenPartners,LimitedPartnerships.NumLimPartners,URI,PreviousName_1.CONDAT
+E, PreviousName_1.CompanyName, PreviousName_2.CONDATE, PreviousName_2.CompanyName,PreviousName_3.CONDATE, PreviousName
+_3.CompanyName,PreviousName_4.CONDATE, PreviousName_4.CompanyName,PreviousName_5.CONDATE, PreviousName_5.CompanyName,P
+reviousName_6.CONDATE, PreviousName_6.CompanyName,PreviousName_7.CONDATE, PreviousName_7.CompanyName,PreviousName_8.CO
+NDATE, PreviousName_8.CompanyName,PreviousName_9.CONDATE, PreviousName_9.CompanyName,PreviousName_10.CONDATE, Previous
+Name_10.CompanyName,ConfStmtNextDueDate, ConfStmtLastMadeUpDate
+"! LTD","08209948","","","9 PRINCES SQUARE","","HARROGATE","","ENGLAND","HG1 1ND","Private Limited Company","Active","
+United Kingdom","","11/09/2012","30","9","30/06/2025","30/09/2023","DORMANT","09/10/2016","11/09/2015","0","0","0","0"
+,"99999 - Dormant Company","","","","0","0","http://business.data.gov.uk/id/company/08209948","","","","","","","","",
+"","","","","","","","","","","","","25/09/2025","11/09/2024"

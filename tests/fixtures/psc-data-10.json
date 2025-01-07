@@ -1,0 +1,31 @@
+[
+  {
+    "company_number": "06452920",
+    "data": {
+      "address": {
+        "address_line_1": "18 Upper Ground",
+        "country": "England",
+        "locality": "London",
+        "postal_code": "SE1 9GL",
+        "premises": "Sea Containers House"
+      },
+      "etag": "61c3ecbc405eb096068ff77739e95fb7770bf88e",
+      "identification": {
+        "legal_authority": "Companies Act 2006",
+        "legal_form": "Private Limited Company"
+      },
+      "kind": "corporate-entity-person-with-significant-control",
+      "links": {
+        "self": "/company/06452920/persons-with-significant-control/corporate-entity/wvnck5c6qyZHeG02DZYH-0_dGYM"
+      },
+      "name": "Wpp Rocky Ltd",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent",
+        "voting-rights-25-to-50-percent"
+      ],
+      "notified_on": "2016-04-06"
+    },
+    "ContentDate": "2024-12-19"
+  },
+{"data":{"kind":"totals#persons-of-significant-control-snapshot","persons_of_significant_control_count":12799821,"statements_count":774422,"exemptions_count":77,"generated_at":"2024-11-22T03:43:03Z"}}
+]
