@@ -56,7 +56,7 @@ uk_psc_storage = ElasticsearchClient(indexes=uk_psc_index_properties)
 
 # GLEIF data: Store in Easticsearch and output new to Kinesis stream
 output_new = NewOutput(storage=Storage(storage=uk_psc_storage),
-                       output=KinesisOutput(stream_name=os.environ.get('UK_PSC_KINESIS_STREAM')))
+                       output=KinesisOutput(stream_name=os.environ.get('SOURCE_KINESIS_STREAM')))
 
 # Definition of UK PSC data pipeline ingest stage
 ingest_stage = Stage(name="ingest",
@@ -66,7 +66,7 @@ ingest_stage = Stage(name="ingest",
 
 # Kinesis stream of UK PSC data from ingest stage
 uk_psc_source = Source(name="uk-psc",
-                      origin=KinesisInput(stream_name=os.environ.get('GLEIF_KINESIS_STREAM')),
+                      origin=KinesisInput(stream_name=os.environ.get('SOURCE_KINESIS_STREAM')),
                       datatype=JSONData())
 
 # Easticsearch storage for BODS data
