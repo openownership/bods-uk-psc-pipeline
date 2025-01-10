@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from uk_psc_pipeline import config
+from bodsukpscpipeline import config
 
 if __name__ == "__main__":
     config.setup()

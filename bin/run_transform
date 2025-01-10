@@ -14,7 +14,7 @@ def run(entry, stage):
 def pipeline():
     os.chdir('/app')
     Path('data').mkdir(exist_ok=True)
-    from uk_psc_pipeline import config
+    from bodsukpscpipeline import config
     run(config.pipeline.process, "transform")
 
 if __name__ == "__main__":

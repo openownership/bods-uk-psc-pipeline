@@ -1,7 +1,8 @@
 import pycountry
-import nationalities
+#import nationalities
 
 from bodspipelines.infrastructure.schemes.data import load_data, get_scheme, lookup_scheme
+from bodsukpscpipeline import nationalities
 from .utils import country_code
 
 def get_country(text):
