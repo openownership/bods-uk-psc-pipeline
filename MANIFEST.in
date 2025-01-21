@@ -1,0 +1,2 @@
+include bodsukpscpipeline/nationalities/demonyms.csv
+include bodsukpscpipeline/nationalities/uk_nationality_data.txt
