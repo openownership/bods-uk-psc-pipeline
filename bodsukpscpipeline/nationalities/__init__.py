@@ -1,7 +1,10 @@
+import os
 import csv
 import json
 import pycountry
 from py_i18n_countries import get_country, get_nationality
+
+data_dir = os.path.dirname(__file__)
 
 def check_subdivisions(row, data, subdivisions):
     match = [sub for sub in subdivisions if sub.name == row[1]]
@@ -33,7 +36,7 @@ def add_data(data):
 
 def load_data():
     data = {}
-    with open("demonyms.csv") as csv_file:
+    with open(f"{data_dir}/demonyms.csv") as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         subdivisions = list(pycountry.subdivisions)
         for row in csv_reader:
@@ -45,7 +48,7 @@ def load_data():
                     check_subdivisions(row, data, subdivisions)
             except:
                 check_subdivisions(row, data, subdivisions)
-    with open("uk_nationality_data.txt") as csv_file:
+    with open(f"{data_dir}/uk_nationality_data.txt") as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             if not row[0] in data:

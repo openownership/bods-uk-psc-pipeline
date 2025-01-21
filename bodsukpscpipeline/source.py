@@ -115,6 +115,8 @@ def build_date(date):
         comp = date.split("/")
         comp.reverse()
         return "-".join(comp)
+    elif date and "-" in date:
+        return date
     else:
         return None
 
@@ -163,7 +165,7 @@ def exception_unspecified(item):
         elif item["data"]["statement"] == "restrictions-notice-issued-to-psc":
             return {"reason":"subjectExemptFromDisclosure","description":"Exception Reason: The company has issued a restrictions notice under paragraph 1 of Schedule 1B to the Act"}
         elif item["data"]["statement"] == "psc-has-failed-to-confirm-changed-details":
-            return {"reason":"interestedPartyHasNotProvidedInformation","description":f"Exception Reason: {item['data']['linked_psc_name']} has failed to comply with a notice given by the company under section 790E of the Act"}
+            return {"reason":"interestedPartyHasNotProvidedInformation","description":f"Exception Reason: {item['data']['statement']} has failed to comply with a notice given by the company under section 790E of the Act"}
         elif item["data"]["statement"] == "at-least-one-beneficial-owner-unidentified-and-information-not-provided-for-at-least-one-beneficial-owner":
             return {"reason":"unknown","description":"Exception Reason: Some beneficial owners have been identified and only some required information can be provided"}
         elif item["data"]["statement"] == "psc-contacted-but-no-response-partnership":
@@ -273,7 +275,10 @@ class UKCOHSource():
         """statementDate for GLEIF item"""
         item_type = self.identify_item(item)
         if item_type == 'entity':
-            updated = item["ConfStmtLastMadeUpDate"]
+            if item["ConfStmtLastMadeUpDate"]:
+                updated = item["ConfStmtLastMadeUpDate"]
+            else:
+                updated = item['ContentDate']
             return build_date(updated)
         elif item_type in ('relationship', 'exception'):
             if "notified_on" in item["data"]:
@@ -437,7 +442,7 @@ class UKCOHSource():
 
     def create_interested_party(self, item):
         """Create interested party"""
-        print("In create_interested_party (kind):", item["data"]["kind"])
+        #print("In create_interested_party (kind):", item["data"]["kind"])
         if item["data"]["kind"] in ("individual-person-with-significant-control",
                                     "individual-beneficial-owner",
                                     "super-secure-person-with-significant-control",

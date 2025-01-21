@@ -55,42 +55,79 @@ uk_company_properties = {"CompanyName": {'type': 'text'},
                          "PreviousName_10_CONDATE": {'type': 'text'},
                          "PreviousName_10_CompanyName": {'type': 'text'},
                          "ConfStmtNextDueDate": {'type': 'text'},
-                         "ConfStmtLastMadeUpDate": {'type': 'text'}}
+                         "ConfStmtLastMadeUpDate": {'type': 'text'},
+                         "ContentDate": {'type': 'text'}}
+
+# Exemption period
+exemption_period = {'type': 'object',
+                    'properties': {"exempt_from": {'type': 'text'},
+                                   "exempt_to": {'type': 'text'}}}
+
+# Exemption
+exemption_properties = {'type': 'object',
+                        'properties': {"exemption_type": {'type': 'text'},
+                                       "items": exemption_period}}
+
+# Exemptions
+exemptions_properties = {'type': 'object',
+                          'properties': {"disclosure_transparency_rules_chapter_five_applies": exemption_properties,
+                                         "psc_exempt_as_shares_admitted_on_market": exemption_properties,
+                                         "psc_exempt_as_trading_on_eu_regulated_market": exemption_properties,
+                                         "psc_exempt_as_trading_on_regulated_market": exemption_properties,
+                                         "psc_exempt_as_trading_on_uk_regulated_market": exemption_properties}}
+
+# Address
+address_properties = {'type': 'object',
+                      'properties': {"address_line_1": {'type': 'text'},
+                                     "address_line_2": {'type': 'text'},
+                                     "country": {'type': 'text'},
+                                     "locality": {'type': 'text'},
+                                     "po_box": {'type': 'text'},
+                                     "postal_code": {'type': 'text'},
+                                     "care_of": {'type': 'text'},
+                                     "premises": {'type': 'text'},
+                                     "region": {'type': 'text'}}}
+
+# Identification
+identification_properties = {'type': 'object',
+                             'properties': {"country_registered": {'type': 'text'},
+                                            "legal_authority": {'type': 'text'},
+                                            "legal_form": {'type': 'text'},
+                                            "place_registered": {'type': 'text'},
+                                            "registration_number": {'type': 'text'}}}
 
 # UK PSC Elasticsearch Properties
 uk_psc_properties = {"company_number": {'type': 'text'},
                      "data": {'type': 'object',
-                               'properties': {"address": {'type': 'object',
-                                                          'properties': {"address_line_1": {'type': 'text'},
-                                                                         "address_line_2": {'type': 'text'},
-                                                                         "country": {'type': 'text'},
-                                                                         "locality": {'type': 'text'},
-                                                                         "postal_code": {'type': 'text'},
-                                                                         "premises": {'type': 'text'},
-                                                                         "region": {'type': 'text'}}},
+                               'properties': {"address": address_properties,
+                                              "principal_office_address": address_properties,
                                               "country_of_residence": {'type': 'text'},
                                               "date_of_birth": {'type': 'object',
                                                                 'properties': {"month": {'type': 'integer'},
                                                                                "year": {'type': 'integer'}}},
                                               "etag": {'type': 'text'},
-                                              "identification": {'type': 'object',
-                                                                 'properties': {"country_registered": {'type': 'text'},
-                                                                                "legal_authority": {'type': 'text'},
-                                                                                "legal_form": {'type': 'text'},
-                                                                                "place_registered": {'type': 'text'},
-                                                                                "registration_number": {'type': 'text'}}},
+                                              "identification": identification_properties,
                                               "kind": {'type': 'text'},
                                               "links": {'type': 'object',
-                                                        'properties': {"self": {'type': 'text'}}},
+                                                        'properties': {"self": {'type': 'text'},
+                                                                       "statement": {'type': 'text'}}},
+                                              "linked_psc_name": {'type': 'text'},
                                               "name": {'type': 'text'},
                                               "name_elements": {'type': 'object',
                                                                 'properties': {"forename": {'type': 'text'},
+                                                                               "middle_name": {'type': 'text'},
                                                                                "surname": {'type': 'text'},
                                                                                "title": {'type': 'text'}}},
                                               "nationality": {'type': 'text'},
                                               "natures_of_control": {'type': 'text'},
+                                              "is_sanctioned": {"type": "boolean"},
+                                              "ceased": {"type": "boolean"},
                                               "ceased_on": {'type': 'text'},
-                                              "notified_on": {'type': 'text'}}}}
+                                              "notified_on": {'type': 'text'},
+                                              "statement": {'type': 'text'},
+                                              "exemptions": exemptions_properties,
+                                              "restrictions_notice_withdrawal_reason": {'type': 'text'}}},
+                    "ContentDate": {'type': 'text'}}
 
 
 def match_company(item):

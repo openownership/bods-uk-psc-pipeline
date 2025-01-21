@@ -28,8 +28,8 @@ from bodspipelines.infrastructure.utils import identify_bods, load_last_run, sav
 
 from .indexes import uk_psc_index_properties
 from .source import UKCOHSource
-from .utils import UKCOHData, identify_uk_coh
-from .transforms import AddContentDate
+from .utils import UKCOHData, identify_uk_coh, psc_exclude
+from .transforms import AddContentDate, RemovePeriodsFromProperties
 
 # Defintion of CH basic company data source
 company_source = Source(name="company-data",
@@ -48,7 +48,7 @@ psc_source = Source(name="psc-data",
                                                    update_frequency="daily"),
                                     size=6500,
                                     directory="uk-psc"),
-                    datatype=JSONData()
+                    datatype=JSONData(header=-1, exclude=psc_exclude)
                    )
 
 # Easticsearch storage for UK PSC data
@@ -56,12 +56,14 @@ uk_psc_storage = ElasticsearchClient(indexes=uk_psc_index_properties)
 
 # GLEIF data: Store in Easticsearch and output new to Kinesis stream
 output_new = NewOutput(storage=Storage(storage=uk_psc_storage),
-                       output=KinesisOutput(stream_name=os.environ.get('SOURCE_KINESIS_STREAM')))
+                       output=KinesisOutput(stream_name=os.environ.get('SOURCE_KINESIS_STREAM')),
+                       identify=identify_uk_coh)
 
 # Definition of UK PSC data pipeline ingest stage
 ingest_stage = Stage(name="ingest",
               sources=[company_source, psc_source],
-              processors=[AddContentDate(identify=identify_uk_coh)],
+              processors=[AddContentDate(identify=identify_uk_coh),
+                          RemovePeriodsFromProperties(identify=identify_uk_coh)],
               outputs=[output_new])
 
 # Kinesis stream of UK PSC data from ingest stage
@@ -70,7 +72,8 @@ uk_psc_source = Source(name="uk-psc",
                       datatype=JSONData())
 
 # Easticsearch storage for BODS data
-bods_storage = ElasticsearchClient(indexes=bods_index_properties)
+bods_storage = ElasticsearchClient(indexes=bods_index_properties,
+                                   index_just_id = ["entity", "person", "relationship"])
 
 # BODS data: Store in Easticsearch and output new to Kinesis stream
 bods_output_new = NewOutput(storage=Storage(storage=bods_storage),

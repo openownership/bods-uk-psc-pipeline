@@ -26,4 +26,6 @@ class AddContentDate:
         if self.identify: item_type = self.identify(item)
         if item_type == 'uk_psc':
             item["ContentDate"] = header["data"]["generated_at"].split("T")[0]
+        elif item_type == 'uk_company':
+            item["ContentDate"] = header["ContentDate"]
         yield item

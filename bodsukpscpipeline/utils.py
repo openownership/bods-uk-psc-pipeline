@@ -48,3 +48,8 @@ def identify_uk_coh(item):
         return 'uk_company'
     elif 'company_number' in item:
         return 'uk_psc'
+
+def psc_exclude(item):
+    if 'generated_at' in item['data']:
+        return True
+    return False
