@@ -1,2 +1,6 @@
 #!/usr/bin/env bash
+cp -r bodsukpscpipeline src/
+cp pyproject.toml src/
+cp MANIFEST.in src/
+cp requirements.txt src/
 source env.sh; docker-compose run bods_pipeline_uk_psc bin/install_pipeline.sh

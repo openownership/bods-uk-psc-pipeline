@@ -13,7 +13,8 @@ services:
       - LOCAL_DATA_DIRECTORY
       - KINESIS_STATUS_DIRECTORY
     volumes:
-      - ./code:/app/venv
+      - ./venv:/app/venv
+      - ./src:/app/src
       - ./data:/app/data
       - ./status:/app/status
     restart: always
