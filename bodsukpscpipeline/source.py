@@ -1,7 +1,7 @@
 import pycountry
-#import nationalities
 
 from bodspipelines.infrastructure.schemes.data import load_data, get_scheme, lookup_scheme
+from bodspipelines.infrastructure.utils import current_date_iso
 from bodsukpscpipeline import nationalities
 from .utils import country_code
 
@@ -202,6 +202,207 @@ def exception_unspecified(item):
 #        return lookup_scheme(country, "company")
 #    return None, None
 
+def interest_share(control):
+    interest_share = {"maximum": None,
+                      "minimum": None,
+                      "exclusiveMinimum": None,
+                      "exclusiveMaximum": None}
+    if "75-to-100-percent" in control:
+        interest_share["maximum"] = 100
+        interest_share["minimum"] = 75
+    elif "25-to-50-percent" in control:
+        interest_share["maximum"] = 50
+        interest_share["minimum"] = 25
+    elif "50-to-75-percent" in control:
+        interest_share["maximum"] = 75
+        interest_share["minimum"] = 50
+    elif "more-than-25-percent" in control:
+        interest_share["maximum"] = 100
+        interest_share["minimum"] = 25
+    return interest_share
+
+def interest_type(item):
+    interest_types = {}
+    if not "natures_of_control" in item["data"]: return interest_types
+    controls = item["data"]["natures_of_control"]
+    for control in controls:
+        match control:
+            case "ownership-of-shares-75-to-100-percent":
+                interest_types["shareholding"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "voting-rights-75-to-100-percent":
+                interest_types["votingRights"] = interest_share(control)
+            case "ownership-of-shares-25-to-50-percent":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-25-to-50-percent":
+                interest_types["votingRights"] = interest_share(control)
+            case "significant-influence-or-control":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "ownership-of-shares-50-to-75-percent":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-50-to-75-percent":
+                interest_types["votingRights"] = interest_share(control)
+            case "significant-influence-or-control-as-firm":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors-as-firm":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "ownership-of-shares-75-to-100-percent-as-firm":
+                interest_types["shareholding"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors-as-trust":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "voting-rights-75-to-100-percent-as-firm":
+                interest_types["votingRights"] = interest_share(control)
+            case "significant-influence-or-control-as-trust":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "ownership-of-shares-75-to-100-percent-as-trust":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-75-to-100-percent-as-trust":
+                interest_types["votingRights"] = interest_share(control)
+            case "voting-rights-25-to-50-percent-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "ownership-of-shares-25-to-50-percent-as-firm":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-25-to-50-percent-as-firm":
+                interest_types["votingRights"] = interest_share(control)
+            case "significant-influence-or-control-limited-liability-partnership":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "ownership-of-shares-25-to-50-percent-as-trust":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-25-to-50-percent-as-trust":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-appoint-and-remove-members-limited-liability-partnership":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "ownership-of-shares-more-than-25-percent-registered-overseas-entity":
+                interest_types["shareholding"] = interest_share(control)
+            case "ownership-of-shares-50-to-75-percent-as-firm":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-50-to-75-percent-as-firm":
+                interest_types["votingRights"] = interest_share(control)
+            case "voting-rights-more-than-25-percent-registered-overseas-entity":
+                interest_types["votingRights"] = interest_share(control)
+            case "voting-rights-75-to-100-percent-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "significant-influence-or-control-registered-overseas-entity":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "ownership-of-shares-50-to-75-percent-as-trust":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-50-to-75-percent-as-trust":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors-registered-overseas-entity":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-75-to-100-percent":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity":
+                interest_types["shareholding"] = interest_share(control)
+            case "right-to-appoint-and-remove-person":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity":
+                interest_types["votingRights"] = interest_share(control)
+            case "voting-rights-50-to-75-percent-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "significant-influence-or-control-as-trust-registered-overseas-entity":
+                interest_types["trustee"] = interest_share(control)
+            case "significant-influence-or-control-as-firm-limited-liability-partnership":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-25-to-50-percent":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "significant-influence-or-control-as-trust-limited-liability-partnership":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership":
+                interest_types["shareholding"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-50-to-75-percent":
+                interest_types["shareholding"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-75-to-100-percent-as-trust":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "right-to-appoint-and-remove-person-as-trust":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership":
+                interest_types["rightsToSurplusAssetsOnDissolution"] = interest_share(control)
+            case "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity":
+                interest_types["votingRights"] = interest_share(control)
+            case "significant-influence-or-control-as-firm-registered-overseas-entity":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-25-to-50-percent-as-trust":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "right-to-appoint-and-remove-person-as-firm":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-75-to-100-percent-as-firm":
+                interest_types["shareholding"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-25-to-50-percent-as-firm":
+                interest_types["shareholding"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-50-to-75-percent-as-trust":
+                interest_types["shareholding"] = interest_share(control)
+            case "part-right-to-share-surplus-assets-50-to-75-percent-as-firm":
+                interest_types["shareholding"] = interest_share(control)
+            case "ownership-of-shares-more-than-25-percent-as-control-over-trust-registered-overseas-entity":
+                interest_types["shareholding"] = interest_share(control)
+            case "ownership-of-shares-more-than-25-percent-as-control-over-firm-registered-overseas-entity":
+                interest_types["shareholding"] = interest_share(control)
+            case "voting-rights-more-than-25-percent-as-control-over-trust-registered-overseas-entity":
+                interest_types["votingRights"] = interest_share(control)
+            case "voting-rights-more-than-25-percent-as-control-over-firm-registered-overseas-entity":
+                interest_types["votingRights"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors-as-control-over-trust-registered-overseas-entity":
+                interest_types["trustee"] = interest_share(control)
+            case "right-to-appoint-and-remove-directors-as-control-over-firm-registered-overseas-entity":
+                interest_types["appointmentOfBoard"] = interest_share(control)
+            case "significant-influence-or-control-as-control-over-trust-registered-overseas-entity":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+            case "significant-influence-or-control-as-control-over-firm-registered-overseas-entity":
+                interest_types["otherInfluenceOrControl"] = interest_share(control)
+    return interest_types
+
+#def interest_share(item):
+#    interest_share = {"maximum": None,
+#                      "minimum": None,
+#                      "exclusiveMinimum": None,
+#                      "exclusiveMaximum": None}
+#    if not "natures_of_control" in item["data"]: return interest_share
+#    controls = item["data"]["natures_of_control"]
+#    for control in controls:
+#        
+#        if "75-to-100-percent" in control:
+#            interest_share["maximum"] = 100
+#            interest_share["minimum"] = 75
+#            return interest_share
+
 class UKCOHSource():
     """UK COH specific methods"""
     def __init__(self):
@@ -335,6 +536,10 @@ class UKCOHSource():
         """Get scheme name"""
         return "Companies House"
 
+    def scheme_url(self, item):
+        """Scheme url"""
+        return "https://www.gov.uk/government/organisations/companies-house"
+
     def identifier(self, item) -> str:
         """Get entity identifier"""
         if 'CompanyNumber' in item:
@@ -363,9 +568,16 @@ class UKCOHSource():
         return []
 
     def creation_date(self, item):
-        """Creation date for GLEIF item"""
+        """Creation date for item"""
         if "IncorporationDate" in item:
             return build_date(item["IncorporationDate"])
+        else:
+            return None
+
+    def dissolution_date(self, item):
+        """Creation date for item"""
+        if "DissolutionDate" in item:
+            return build_date(item["DissolutionDate"])
         else:
             return None
 
@@ -394,6 +606,7 @@ class UKCOHSource():
                 address['country'] = data["RegAddress.Country"]
         if not 'country' in address:
             address['country'] = "GB"
+        address['type'] = "registered"
 
     def _extract_person_address(self, address, data):
         address_data = data["data"]["address"]
@@ -425,6 +638,7 @@ class UKCOHSource():
                 address['country'] = address_data["country"]
         if not 'country' in address:
             address['country'] = "GB"
+        address['type'] = "service"
 
     def registered_address(self, item) -> dict:
         """Get registered address"""
@@ -526,6 +740,10 @@ class UKCOHSource():
         interestLevel = "unknown"
         return interestLevel
 
+    def interest_types(self, item):
+        """Get interest types"""
+        return interest_type(item)
+
     def interest_details(self, item):
         """Get interest details"""
         item_type = self.identify_item(item)
@@ -608,3 +826,38 @@ class UKCOHSource():
             if country:
                 return [country]
         return []
+
+    def item_link(self, item, item_type):
+        """Link to more info on entity"""
+        if item_type == "entity":
+            if "URI" in item and item["URI"]:
+                return item["URI"]
+            else:
+                return None
+        else:
+            if "links" in item["data"] and 'self' in item["data"]["links"]:
+                 if "persons-with-significant" in item["data"]["links"]["self"]:
+                     link = item["data"]["links"]["self"].split("-statements")[0]
+                     return "https://find-and-update.company-information.service.gov.uk{link}"
+            return None
+
+    def retrived_date(self, item):
+        """Date that data was retrieve"""
+        if "ContentDate" in item:
+            return item["ContentDate"]
+        else:
+            return current_date_iso()
+
+    def entity_details(self, item):
+        """Link to more info on entity"""
+        if "CompanyCategory" in item and item["CompanyCategory"]:
+            return item["CompanyCategory"]
+        return None
+
+    def has_public_listing(self, item):
+        """Does entity have public listing"""
+        if "CompanyCategory" in item and item["CompanyCategory"]:
+            company_type = item["CompanyCategory"].lower()
+            if "public" in company_type and "company" in company_type:
+                return True
+        return False
