@@ -575,7 +575,7 @@ class UKCOHSource():
             return None
 
     def dissolution_date(self, item):
-        """Creation date for item"""
+        """Dissolution date for item"""
         if "DissolutionDate" in item:
             return build_date(item["DissolutionDate"])
         else:
@@ -770,7 +770,8 @@ class UKCOHSource():
     @property
     def source_description(self) -> str:
         """Get source description"""
-        return 'Companies House'
+        return {'name': 'Companies House',
+                'uri': 'https://find-and-update.company-information.service.gov.uk/'}
 
     @property
     def source_url(self) -> str:
@@ -783,9 +784,13 @@ class UKCOHSource():
         return 'Company'
 
     def status(self, item) -> str:
-        """Get GLEIF entity status"""
+        """Get entity status"""
         if 'CompanyStatus' in item:
             return item['CompanyStatus']
+
+    def registration_status(self, item) -> str:
+        """Get registration status"""
+        return None
 
     def person_type(self, item):
         if item["data"]["kind"] in ("super-secure-person-with-significant-control",
