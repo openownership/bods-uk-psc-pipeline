@@ -523,6 +523,16 @@ class UKCOHSource():
                     name_data["title"] = item["data"]["name_elements"]["title"]
             return name_data
 
+    def alternate_names(self, item, item_type):
+        """List of alternate names"""
+        names = []
+        if "PreviousName_1_CompanyName" in item:
+            for i in range(1, 10):
+                name = f"PreviousName_{i}_CompanyName"
+                if name in item and item[name]:
+                    names.append(item[name])
+        return names
+
     def jurisdiction(self, item):
         return "GB"
 
@@ -583,27 +593,29 @@ class UKCOHSource():
 
     def _extract_entity_address(self, address, data):
         #print("Data:", data)
-        if "RegAddress.AddressLine1" in data and data["RegAddress.AddressLine1"]:
-            address['address1'] = data["RegAddress.AddressLine1"]
-        if "RegAddress.AddressLine2" in data and data["RegAddress.AddressLine2"]:
-            address['address2'] = data["RegAddress.AddressLine2"]
-        if "RegAddress.CareOf" in data and data["RegAddress.CareOf"]:
-            address['address1'] = f"c/o {data['RegAddress.CareOf']}"
-        if "RegAddress.POBox" in data and data["RegAddress.POBox"]:
+        if "RegAddress_AddressLine1" in data and data["RegAddress_AddressLine1"]:
+            address['address1'] = data["RegAddress_AddressLine1"]
+        if "RegAddress_AddressLine2" in data and data["RegAddress_AddressLine2"]:
+            address['address2'] = data["RegAddress_AddressLine2"]
+        if "RegAddress_CareOf" in data and data["RegAddress_CareOf"]:
+            address['address1'] = f"c/o {data['RegAddress_CareOf']}"
+        if "RegAddress_POBox" in data and data["RegAddress_POBox"]:
             address['address2'] = data["RegAddress.POBox"]
-        if "RegAddress.PostTown" in data and data["RegAddress.PostTown"]:
-            address['city'] = data["RegAddress.PostTown"]
-        if "RegAddress.PostCode" in data and data["RegAddress.PostCode"]:
-            address['postcode'] = data["RegAddress.PostCode"]
-        if "RegAddress.County" in data and data["RegAddress.County"]:
-            address['region'] = data["RegAddress.County"]
-        if "RegAddress.Country" in data and data["RegAddress.Country"]:
-            if data["RegAddress.Country"].lower() in ("england", "scotland", "wales", "northern ireland"):
+        if "RegAddress_PostTown" in data and data["RegAddress_PostTown"]:
+            address['city'] = data["RegAddress_PostTown"]
+        if "RegAddress_PostCode" in data and data["RegAddress_PostCode"]:
+            address['postcode'] = data["RegAddress_PostCode"]
+        if "RegAddress_County" in data and data["RegAddress_County"]:
+            address['region'] = data["RegAddress_County"]
+        if "RegAddress_Country" in data and data["RegAddress_Country"]:
+            if data["RegAddress_Country"].lower() in ("england", "scotland", "wales", "northern ireland"):
                 if not 'region' in address:
-                    address['region'] = data["RegAddress.Country"]
+                    address['region'] = data["RegAddress_Country"]
+                address['country'] = "GB"
+            elif data["RegAddress_Country"].lower() == "united kingdom":
                 address['country'] = "GB"
             else:
-                address['country'] = data["RegAddress.Country"]
+                address['country'] = data["RegAddress_Country"]
         if not 'country' in address:
             address['country'] = "GB"
         address['type'] = "registered"
@@ -644,7 +656,7 @@ class UKCOHSource():
         """Get registered address"""
         address = {}
         #print("Data:", item)
-        if 'RegAddress.AddressLine1' in item:
+        if 'RegAddress_AddressLine1' in item:
             self._extract_entity_address(address, item)
         if "data" in item and "address" in item["data"]:
             self._extract_person_address(address, item)
