@@ -783,7 +783,7 @@ class UKCOHSource():
         """Get GLEIF entity name"""
         return 'Company'
 
-    def status(self, item) -> str:
+    def entity_status(self, item) -> str:
         """Get entity status"""
         if 'CompanyStatus' in item:
             return item['CompanyStatus']
