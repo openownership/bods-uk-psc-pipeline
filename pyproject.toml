@@ -5,7 +5,8 @@ version = "0.1"
 requires-python = '>=3.10'
 dependencies = [
                 #"bodspipelines @ git+https://github.com/openownership/bodspipelines.git@bods_0_4_new#egg=bodspipelines",
-                "py-i18n-countries"]
+                "py-i18n-countries",
+                "countryguess"]
 readme="README.md"
 license = {text= "AGPLv3"}
 authors = [
