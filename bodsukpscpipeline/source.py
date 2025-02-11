@@ -1,23 +1,100 @@
 import pycountry
 from countryguess import guess_country
+from ukpostcodeutils import validation
+from thefuzz import fuzz
 
 from bodspipelines.infrastructure.schemes.data import load_data, get_scheme, lookup_scheme
 from bodspipelines.infrastructure.utils import current_date_iso
 from bodsukpscpipeline import nationalities
 from .utils import country_code
 
+emirates = {"abu dhabi": 'AE-AZ',
+         'abū zaby': 'AE-AZ',
+         "ajman": 'AE-AJ',
+         '‘ajmān': 'AE-AJ',
+         "dubai": 'AE-DU',
+         'dubayy': 'AE-DU',
+         "fujairah": 'AE-FU',
+         'al fujayrah': 'AE-FU',
+         "sharjah": 'AE-SH',
+         'ash shāriqah': 'AE-SH',
+         "umm al quwain": 'AE-UQ',
+         'umm al qaywayn': 'AE-UQ',
+         "ras al-khaimah": 'AE-RK',
+         'ra’s al khaymah': 'AE-RK'}
+
+def match_demonyms(text):
+    for d in nationalities.state_demonyms:
+        if d in text.lower():
+            code = nationalities.state_demonyms[d]
+            return pycountry.countries.get(alpha_2=code)
+    data = {"english": "GB", "scottish": "GB", "welsh": "GB"}
+    for d in data:
+        if d in text.lower():
+            code = data[d]
+            return pycountry.countries.get(alpha_2=code)
+    return None
+
+def fuzzy_match_subdiv(country_code, text):
+    for sub in pycountry.subdivisions.get(country_code=country_code):
+        if fuzz.ratio(sub.name.lower(), text.lower()) > 85:
+            return sub
+    return None
+
 def get_country(text):
     country = None
-    if "," in text:
+    if "state of" in text.lower():
+        state_text = text.lower().split("state of")[-1].strip()
+        if "," in state_text:
+            state_text = state_text.split(",")[0].strip()
+        try:
+            state = pycountry.subdivisions.search_fuzzy(state_text)
+            country = state
+        except:
+            state = fuzzy_match_subdiv("US", state_text)
+            if state: country = state
+    if not country and (text.lower() in emirates or "u.a.e" in text.lower() or "uae" in text.lower()):
+        country = pycountry.countries.get(alpha_2='AE')
+    if not country and "," in text:
         if text.split(",")[-1].strip().lower() in ("usa", "us", "united states"):
             #print("Searching for:", text.split(",")[0].lower())
-            state = pycountry.subdivisions.search_fuzzy(text.split(",")[0].strip().lower())
-            country = state
+            try:
+                state = pycountry.subdivisions.search_fuzzy(text.split(",")[0].strip().lower())
+                country = state
+            except:
+                state = fuzzy_match_subdiv("US", text.split(",")[0].strip().lower())
+                if state: country = state
         else:
             try:
                 country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
             except LookupError:
                 pass
+    if not country and "-" in text:
+        parts = [part.strip() for part in text.split("-")]
+        if any([parts for part in parts if part.lower() in ("usa", "us", "united states")]):
+            for part in parts:
+                if not part.lower() in ("usa", "us", "united states"):
+                    try:
+                        state = pycountry.subdivisions.search_fuzzy(part.lower())
+                        if state:
+                            country = state
+                            break
+                    except:
+                        pass
+            if not country:
+                for part in parts:
+                    if part.lower() in ("usa", "us", "united states"):
+                        try:
+                            country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
+                            break
+                        except LookupError:
+                            pass
+        else:
+            for part in parts:
+                try:
+                    country = pycountry.countries.search_fuzzy(part.lower())
+                except LookupError:
+                    pass
     if not country:
         try:
              country = pycountry.countries.search_fuzzy(text)
@@ -30,10 +107,24 @@ def get_country(text):
             if c in text.lower():
                 country = pycountry.countries.get(alpha_2='GB')
     if not country:
-        c = guess_country(text, default=None)
-        if c:
-            country = pycountry.countries.search_fuzzy(c['name_short'])
-    print("Country:", country, "from:", text)
+        if text == "Channel Islands":
+            return None
+        else:
+            c = guess_country(text, default=None)
+            if c:
+                print("Guess:", c, "from:", text)
+                if c['name_short'] != "Channel Islands":
+                    try:
+                        country = pycountry.countries.search_fuzzy(c['name_short'])
+                    except:
+                        try:
+                            country = pycountry.countries.search_fuzzy(c['name_official'])
+                        except:
+                            pass
+    if not country:
+        if text.lower() == "alderney":
+            country = pycountry.countries.lookup("Guernsey")
+    #print("Country:", country, "from:", text)
     return country[0] if isinstance(country, list) else country
 
 def subnational(country_code, item):
@@ -44,26 +135,40 @@ def subnational(country_code, item):
                 subnat = pycountry.countries.search_fuzzy(item["data"]["identification"]["place_registered"])
             except:
                 pass
+    if country_code == "AE":
+        if "country_registered" in item["data"]["identification"]:
+            if item["data"]["identification"]["country_registered"].lower() in emirates:
+                subnat = [pycountry.subdivisions.get(
+                             code=emirates[item["data"]["identification"]["country_registered"].lower()]
+                         )]
+        #print("AE:", item["data"]["identification"])
+        #if "country_registered" in item["data"]["identification"]:
+        #    try:
+        #        subnat = pycountry.subdivisions.search_fuzzy(item["data"]["identification"]["country_registered"])
+        #    except:
+        #        pass
     if country_code in ("CA", "US"):
-        if ("legal_authority" in item["data"]["identification"] and item["data"]["identification"]["legal_authority"] !=
-            item["data"]["identification"]["country_registered"]):
-            if "state of" in item["data"]["identification"]["legal_authority"].lower():
-                name = item["data"]["identification"]["legal_authority"].lower().split("state of")[-1].strip()
-            else:
-                name = item["data"]["identification"]["legal_authority"]
-            try:
-                subnat = pycountry.subdivisions.search_fuzzy(name)
-                #subnat = subnat.code
-            except:
-                pass
-            if not subnat:
+        if ("legal_authority" in item["data"]["identification"] and "country_registered" 
+            in item["data"]["identification"]):
+            if (item["data"]["identification"]["legal_authority"] !=
+                item["data"]["identification"]["country_registered"]):
+                if "state of" in item["data"]["identification"]["legal_authority"].lower():
+                    name = item["data"]["identification"]["legal_authority"].lower().split("state of")[-1].strip()
+                else:
+                    name = item["data"]["identification"]["legal_authority"]
                 try:
-                    subnat = pycountry.subdivisions.search_fuzzy(item["data"]["identification"]["country_registered"])
-                    if subnat:
-                        if subnat[0].country_code != country_code: subnat = None
+                    subnat = pycountry.subdivisions.search_fuzzy(name)
+                    #subnat = subnat.code
                 except:
                     pass
-    print("Subnational:", subnat)
+                if not subnat:
+                    try:
+                        subnat = pycountry.subdivisions.search_fuzzy(item["data"]["identification"]["country_registered"])
+                        if subnat:
+                            if subnat[0].country_code != country_code: subnat = None
+                    except:
+                        pass
+    #print("Subnational:", subnat)
     if subnat:
         if hasattr(subnat[0], "alpha_2"):
             return subnat[0].alpha_2
@@ -72,7 +177,23 @@ def subnational(country_code, item):
     else:
         return None
 
+def uk_legal_authority(item):
+    return ("legal_authority" in item["data"]["identification"] and
+            item["data"]["identification"]["legal_authority"] in ("Companies Act",
+                                            "Companies Act 2006", "English Law",
+                                            "Uk Companies Act 2006", "UK Companies Act 2006",
+                                            'Companies Act 1985', "Limited Companys Act 2006",
+                                            "Companies Acts", "Companies Act 2014",
+                                            "Company Act 2006"))
+
+def is_uk_address(address):
+    if not "country" in address and "postal_code" in address:
+        if "locality" in address and address["locality"].lower() in ("london",): return True
+        if "postal_code" in address and validation.is_valid_postcode(address["postal_code"]): return True
+    return False
+
 def infer_scheme(item):
+    country = None
     #if ("name" in item["data"] and "address" in item["data"] and "country" in 
     #     item["data"]["address"]):
     #    if item["data"]["name"].split()[-1].lower() in ("ag", "sa", "s.a.", "n.v.",
@@ -83,35 +204,52 @@ def infer_scheme(item):
     #        return code, "company"
     if "identification" in item["data"]:
         #print("Ident:", item["data"]["identification"])
-        if ("legal_authority" in item["data"]["identification"] and
-            item["data"]["identification"]["legal_authority"] in ("Companies Act",
-                                            "Companies Act 2006", "English Law",
-                                            "Uk Companies Act 2006", "UK Companies Act 2006",
-                                            'Companies Act 1985', "Limited Companys Act 2006",
-                                            "Companies Acts", "Companies Act 2014",
-                                            "Company Act 2006")):
+        #if ("legal_authority" in item["data"]["identification"] and
+        #    item["data"]["identification"]["legal_authority"] in ("Companies Act",
+        #                                    "Companies Act 2006", "English Law",
+        #                                    "Uk Companies Act 2006", "UK Companies Act 2006",
+        #                                    'Companies Act 1985', "Limited Companys Act 2006",
+        #                                    "Companies Acts", "Companies Act 2014",
+        #                                    "Company Act 2006")):
+        if uk_legal_authority(item):
             if "legal_form" in item["data"]["identification"]:
                 for name in ("company", "compnay", "compamy", "companies", "limited"):
                     if name in item["data"]["identification"]["legal_form"].lower():
-                        #return "GB-COH", "company"
-                        structure = "company"
+                        return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "company"
+                        #structure = "company"
+                if "local authority" in item["data"]["identification"]["legal_form"].lower():
+                    return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "government"
             else:
-                #return "GB-COH", "company"
-                structure = "company"
-        if ("legal_authority" in item["data"]["identification"] and 
-            item["data"]["identification"]["legal_authority"] == "Trust Acts"):
+                return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "company"
+                #structure = "company"
+        if ("legal_authority" in item["data"]["identification"] and
+            item["data"]["identification"]["legal_authority"] in ("Trust Acts", "Trustees Acts")):
             if "legal_form" in item["data"]["identification"]:
                 if "trust" in item["data"]["identification"]["legal_form"].lower():
-                    return "GB-COH", "trust"
+                    return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "trust"
         if ("legal_authority" in item["data"]["identification"] and
             "company" in item["data"]["identification"]["legal_authority"].lower()):
             if "legal_form" in item["data"]["identification"]:
                 if "uk" in item["data"]["identification"]["legal_form"].lower():
-                    return "GB-COH", "company"
+                    return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "company"
         if "country_registered" in item["data"]["identification"]:
             country = get_country(item["data"]["identification"]["country_registered"])
-        elif "legal_authority" in item["data"]["identification"]:
+        if not country and "legal_authority" in item["data"]["identification"]:
             country = get_country(item["data"]["identification"]["legal_authority"])
+            if not country:
+                country = match_demonyms(item["data"]["identification"]["legal_authority"])
+        if not country and "place_registered" in item["data"]["identification"]:
+            country = get_country(item["data"]["identification"]["place_registered"])
+        if not country and "country" in item["data"]["address"]:
+            country = get_country(item["data"]["address"]["country"])
+        if not country and ("country_registered" in item["data"]["identification"] and
+                "channel islands" in item["data"]["identification"]["country_registered"].lower()):
+                if "locality" in item["data"]["address"]:
+                    country = get_country(item["data"]["address"]["locality"])
+        if not country and ("legal_authority" in item["data"]["identification"] and
+                "channel islands" in item["data"]["identification"]["legal_authority"].lower()):
+                if "locality" in item["data"]["address"]:
+                    country = get_country(item["data"]["address"]["locality"])
         if "legal_form" in item["data"]["identification"]:
             if "Government" in item["data"]["identification"]["legal_form"]:
                 if "Department" in item["data"]["identification"]:
@@ -121,12 +259,13 @@ def infer_scheme(item):
             else:
                 structure = "company"
         if structure == "government":
-            return f"{country.alpha_2}-GOV", "government"
+            return f"{country.alpha_2}-GOV", "", "", "government"
         else:
             country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
             province = subnational(country_code, item)
+            print("Lookup:", country_code, structure)
             code, name, url = lookup_scheme(country_code, structure, unconfirmed=True, subnational=province)
-            print("Lookup:", country_code, structure, code)
+            print("Code:", code)
             return code, name, url, structure
     if ("name" in item["data"] and "address" in item["data"] and "country" in
          item["data"]["address"]):
@@ -138,26 +277,32 @@ def infer_scheme(item):
             return code, name, url, "company"
 
 def build_entity_id(item):
-    code, scheme, url, structure = infer_scheme(item)
-    if structure == "government":
-        name = item["data"]["name"]
-        return f"{code}-{name.replace(' ','-')}"
-    elif structure == "government_agency":
-        name = item["data"]["name"]
-        return f"{code}-{name.replace(' ','-')}"
-    elif structure == "trust":
-        name = item["data"]["name"]
-        return f"{code}-{name.replace(' ','-')}"
-    elif structure == "company":
-        if "identification" in item["data"] and "registration_number" in item["data"]["identification"]:
-            name = item["data"]["identification"]["registration_number"]
-        else:
-            name = item["data"]["name"].replace(' ','-')
-        return f"{code}-{name}"
+    if ("identification" in item["data"] and
+        "registration_number" in item["data"]["identification"]):
+        code, scheme, url, structure = infer_scheme(item)
+        if structure == "government":
+            name = item["data"]["name"]
+            return f"{code}-{name.replace(' ','-')}"
+        elif structure == "government_agency":
+            name = item["data"]["name"]
+            return f"{code}-{name.replace(' ','-')}"
+        elif structure == "trust":
+            name = item["data"]["name"]
+            return f"{code}-{name.replace(' ','-')}"
+        elif structure == "company":
+            if "identification" in item["data"] and "registration_number" in item["data"]["identification"]:
+                name = item["data"]["identification"]["registration_number"]
+            else:
+                name = item["data"]["name"].replace(' ','-')
+            return f"{code}-{name}"
+    else:
+        link_id = item['data']['links']['self'].split('/')[-1]
+        return f"GB-COH-ENT-{item['company_number']}-{link_id}"
 
 def build_entity_local_id(item):
     if ("identification" in item["data"] and
-        "registration_number" in item["data"]["identification"]):
+        "registration_number" in item["data"]["identification"] and
+        not item["data"]["identification"]["registration_number"].lower() in ("n/a", "na")):
         return f"GB-COH-{item['data']['identification']['registration_number']}"
     else:
         link_id = item['data']['links']['self'].split('/')[-1]
@@ -462,7 +607,7 @@ def interest_type(item):
 #    if not "natures_of_control" in item["data"]: return interest_share
 #    controls = item["data"]["natures_of_control"]
 #    for control in controls:
-#        
+#
 #        if "75-to-100-percent" in control:
 #            interest_share["maximum"] = 100
 #            interest_share["minimum"] = 75
@@ -511,7 +656,8 @@ class UKCOHSource():
                 #else:
                 #    link_id = item['data']['links']['self'].split('/')[-1]
                 #    return f"GB-COH-ENT-{item['company_number']}-{link_id}"
-                if "identification" in item["data"] and "country_registered" in item["data"]["identification"]:
+                if ("identification" in item["data"] and "country_registered" in item["data"]["identification"] 
+                    and not item["data"]["identification"]["country_registered"].lower() in ("n/a", "na")):
                     if is_local(item["data"]["identification"]["country_registered"]):
                         return build_entity_local_id(item)
                     else:
@@ -531,6 +677,11 @@ class UKCOHSource():
         elif item_type == 'exception':
             link_id = item['data']['links']['self'].split('/')[-1]
             return f"GB-COH-REL-{item['company_number']}-{link_id}"
+
+    def relationship_id(self, item):
+        """Identifier for GLEIF relationship"""
+        link_id = item['data']['links']['self'].split('/')[-1]
+        return f"GB-COH-REL-{item['company_number']}-{link_id}"
 
     def exception_id(self, record_id):
         """Relationship coresponding recordId for exception"""
@@ -617,33 +768,69 @@ class UKCOHSource():
                 return "GB"
             else:
                 country = get_country(item["data"]["identification"]["country_registered"])
-                country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                return country_code
+                if country:
+                    country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    return country_code
         if "identification" in item["data"] and "legal_authority" in item["data"]["identification"]:
             if is_local(item["data"]["identification"]["legal_authority"]):
                 return "GB"
+            elif "Local Government Act 1972" in item["data"]["identification"]["legal_authority"]:
+                return "GB"
             else:
+                if " law" in item["data"]["identification"]["legal_authority"].lower():
+                    name = item["data"]["identification"]["legal_authority"].lower().split("law")[0].strip()
+                else:
+                    name = item["data"]["identification"]["legal_authority"].lower()
                 country = get_country(item["data"]["identification"]["legal_authority"])
-                country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                return country_code
+                if country:
+                    country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    return country_code
+                else:
+                    country = match_demonyms(item["data"]["identification"]["legal_authority"])
+                    if country:
+                        country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                        return country_code
         if "address" in item["data"] and "country" in item["data"]["address"]:
             if is_local(item["data"]["address"]["country"]):
                 return "GB"
             else:
                 country = get_country(item["data"]["address"]["country"])
+                if country:
+                    country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    return country_code
+        if "address" in item["data"] and "locality" in item["data"]["address"]:
+            country = get_country(item["data"]["address"]["locality"])
+            if country:
                 country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
                 return country_code
+        if "address" in item["data"] and "region" in item["data"]["address"]:
+            country = get_country(item["data"]["address"]["region"])
+            if country:
+                 country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                 return country_code
+        if "address" in item["data"]:
+            if is_uk_address(item["data"]["address"]):
+                return "GB"
+        print(item)
 
-    def scheme(self, item) -> str:
+    def scheme(self, item, item_type) -> str:
         """Get scheme"""
-        if 'CompanyNumber' in item:
-            return 'GB-COH', "Companies House", "https://www.gov.uk/government/organisations/companies-house"
-        if "identification" in item["data"] and "country_registered" in item["data"]["identification"]:
-            if is_local(item["data"]["identification"]["country_registered"]):
+        if item_type == "entity":
+            if 'CompanyNumber' in item:
                 return 'GB-COH', "Companies House", "https://www.gov.uk/government/organisations/companies-house"
+            if "identification" in item["data"]:
+                for key in ("country_registered", "legal_authority", "place_registered"):
+                    if key in item["data"]["identification"]:
+                        if is_local(item["data"]["identification"][key]):
+                            return 'GB-COH', "Companies House", "https://www.gov.uk/government/organisations/companies-house"
+                        else:
+                            code, name, url, structure = infer_scheme(item)
+                            return code, name, url
+                return None, None, None
             else:
-                code, name, url, structure = infer_scheme(item)
-                return code, name, url
+                return None, None, None
+        else:
+            return None, None, None
 
     #def scheme_name(self, item) -> str:
     #    """Get scheme name"""
@@ -660,19 +847,19 @@ class UKCOHSource():
     #    """Scheme url"""
     #    return "https://www.gov.uk/government/organisations/companies-house"
 
-    def identifier(self, item) -> str:
+    def identifier(self, item, item_type) -> str:
         """Get entity identifier"""
-        if 'CompanyNumber' in item:
-            return item['CompanyNumber']
-        else:
-            if "identification" in item["data"] and "registration_number" in item["data"]["identification"]:
-                return item["data"]["identification"]["registration_number"]
+        if item_type == "entity":
+            if 'CompanyNumber' in item:
+                return item['CompanyNumber']
             else:
-                return None
-
-    def person_identifier(self, item) -> str:
-        """Get person identifier"""
-        return None
+                if ("identification" in item["data"] and "registration_number" in item["data"]["identification"]
+                    and not item["data"]["identification"]["registration_number"].lower() in ("n/a", "na")):
+                    return item["data"]["identification"]["registration_number"]
+                else:
+                    return None
+        else:
+            return None
 
     def additional_identifiers(self, item) -> list:
         """Get list of additional identifiers"""
@@ -728,7 +915,11 @@ class UKCOHSource():
             elif data["RegAddress_Country"].lower() == "united kingdom":
                 address['country'] = "GB"
             else:
-                address['country'] = data["RegAddress_Country"]
+                country = get_country(data["RegAddress_Country"])
+                if country:
+                    address['country'] = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                else:
+                    address['country'] = data["RegAddress_Country"]
         if not 'country' in address:
             address['country'] = "GB"
         address['type'] = "registered"
@@ -760,7 +951,11 @@ class UKCOHSource():
                     address['region'] = address_data["country"]
                 address['country'] = "GB"
             else:
-                address['country'] = address_data["country"]
+                country = get_country(address_data["country"])
+                if country:
+                    address['country'] = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                else:
+                    address['country'] = address_data["country"]
         if not 'country' in address:
             address['country'] = "GB"
         address['type'] = "service"

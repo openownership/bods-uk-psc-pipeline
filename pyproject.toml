@@ -6,7 +6,10 @@ requires-python = '>=3.10'
 dependencies = [
                 #"bodspipelines @ git+https://github.com/openownership/bodspipelines.git@bods_0_4_new#egg=bodspipelines",
                 "py-i18n-countries",
-                "countryguess"]
+                "countryguess",
+                "uk-postcode-utils",
+                "countrydetails",
+                "thefuzz"]
 readme="README.md"
 license = {text= "AGPLv3"}
 authors = [
