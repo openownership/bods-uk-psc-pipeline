@@ -1,6 +1,7 @@
 import pycountry
 import re
 
+from thefuzz import fuzz
 from datetime import datetime
 
 def latest_date(update_frequency):
@@ -53,3 +54,37 @@ def psc_exclude(item):
     if 'generated_at' in item['data']:
         return True
     return False
+
+def load_country_data():
+    data = {'countries': {}, 'US': {}, 'CA': {}, 'AE': {}, 'CN': {}}
+    for country in pycountry.countries:
+        data[country.name.lower()] = country.alpha_2
+        if hasattr(country, "official_name"): data['countries'][country.official_name.lower()] = country.alpha_2
+    for code in ('US', 'CA', 'AE', 'CN'):
+        for sub in pycountry.subdivisions.get(country_code=code):
+            data[sub.name.lower()] = sub.code
+    return data
+
+def country_fuzzy_search(country_data, text):
+    t = text.lower()
+    best = 0
+    result = None
+    for name in country_data['countries']:
+        if ratio := fuzz.ratio(t, name) > best:
+            best = ratio
+            result = name
+    if best > 90:
+        return country_data['countries'][name]
+    return None
+
+def subdiv_fuzzy_search(country_data, country_code, text):
+    t = text.lower()
+    best = 0
+    result = None
+    for name in country_data[country_code]:
+        if ratio := fuzz.ratio(t, name) > best:
+            best = ratio
+            result = name
+    if best > 90:
+        return country_data[country_code][name]
+    return None

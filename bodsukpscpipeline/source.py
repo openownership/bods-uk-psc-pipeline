@@ -6,7 +6,7 @@ from thefuzz import fuzz
 from bodspipelines.infrastructure.schemes.data import load_data, get_scheme, lookup_scheme
 from bodspipelines.infrastructure.utils import current_date_iso
 from bodsukpscpipeline import nationalities
-from .utils import country_code
+from .utils import country_code, load_country_data, country_fuzzy_search, subdiv_fuzzy_search
 
 emirates = {"abu dhabi": 'AE-AZ',
          'abū zaby': 'AE-AZ',
@@ -27,12 +27,14 @@ def match_demonyms(text):
     for d in nationalities.state_demonyms:
         if d in text.lower():
             code = nationalities.state_demonyms[d]
-            return pycountry.countries.get(alpha_2=code)
+            return code
+            #return pycountry.countries.get(alpha_2=code)
     data = {"english": "GB", "scottish": "GB", "welsh": "GB"}
     for d in data:
         if d in text.lower():
             code = data[d]
-            return pycountry.countries.get(alpha_2=code)
+            return code
+            #return pycountry.countries.get(alpha_2=code)
     return None
 
 def fuzzy_match_subdiv(country_code, text):
@@ -41,67 +43,81 @@ def fuzzy_match_subdiv(country_code, text):
             return sub
     return None
 
-def get_country(text):
+def get_country(country_data, text):
     country = None
     if "state of" in text.lower():
         state_text = text.lower().split("state of")[-1].strip()
         if "," in state_text:
             state_text = state_text.split(",")[0].strip()
-        try:
-            state = pycountry.subdivisions.search_fuzzy(state_text)
-            country = state
-        except:
-            state = fuzzy_match_subdiv("US", state_text)
-            if state: country = state
+        #try:
+        #    state = pycountry.subdivisions.search_fuzzy(state_text)
+        #    country = state
+        #except:
+        #    state = fuzzy_match_subdiv("US", state_text)
+        #    if state: country = state
+        state = subdiv_fuzzy_search(country_data, "US", state_text)
+        if state: country = state
     if not country and (text.lower() in emirates or "u.a.e" in text.lower() or "uae" in text.lower()):
         country = pycountry.countries.get(alpha_2='AE')
     if not country and "," in text:
         if text.split(",")[-1].strip().lower() in ("usa", "us", "united states"):
             #print("Searching for:", text.split(",")[0].lower())
-            try:
-                state = pycountry.subdivisions.search_fuzzy(text.split(",")[0].strip().lower())
-                country = state
-            except:
-                state = fuzzy_match_subdiv("US", text.split(",")[0].strip().lower())
-                if state: country = state
+            #try:
+            #    state = pycountry.subdivisions.search_fuzzy(text.split(",")[0].strip().lower())
+            #    country = state
+            #except:
+            #    state = fuzzy_match_subdiv("US", text.split(",")[0].strip().lower())
+            #    if state: country = state
+            state = subdiv_fuzzy_search(country_data, "US", text.split(",")[0].strip().lower())
+            if state: country = state
         else:
-            try:
-                country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
-            except LookupError:
-                pass
+            #try:
+            #    country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
+            #except LookupError:
+            #    pass
+            country = country_fuzzy_search(country_data, text.split(",")[-1].strip().lower())
     if not country and "-" in text:
         parts = [part.strip() for part in text.split("-")]
         if any([parts for part in parts if part.lower() in ("usa", "us", "united states")]):
             for part in parts:
                 if not part.lower() in ("usa", "us", "united states"):
-                    try:
-                        state = pycountry.subdivisions.search_fuzzy(part.lower())
-                        if state:
-                            country = state
-                            break
-                    except:
-                        pass
+                    #try:
+                    #    state = pycountry.subdivisions.search_fuzzy(part.lower())
+                    #    if state:
+                    #        country = state
+                    #        break
+                    #except:
+                    #    pass
+                    state = subdiv_fuzzy_search(country_data, "US", part.lower())
+                    if state:
+                        country = state
+                        break
             if not country:
                 for part in parts:
                     if part.lower() in ("usa", "us", "united states"):
-                        try:
-                            country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
-                            break
-                        except LookupError:
-                            pass
+                        #try:
+                        #    country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
+                        #    break
+                        #except LookupError:
+                        #    pass
+                        country = country_fuzzy_search(country_data, text.split(",")[-1].strip().lower())
+                        if country: break
         else:
             for part in parts:
-                try:
-                    country = pycountry.countries.search_fuzzy(part.lower())
-                except LookupError:
-                    pass
+                #try:
+                #    country = pycountry.countries.search_fuzzy(part.lower())
+                #except LookupError:
+                #    pass
+                country = country_fuzzy_search(country_data, part.lower())
+                if country: break
     if not country:
-        try:
-             country = pycountry.countries.search_fuzzy(text)
-        except LookupError:
-            for c in pycountry.countries:
-                if c.name.lower() in text.lower():
-                     country = c
+        #try:
+        #     country = pycountry.countries.search_fuzzy(text)
+        #except LookupError:
+        #    for c in pycountry.countries:
+        #        if c.name.lower() in text.lower():
+        #             country = c
+        country = country_fuzzy_search(country_data, text)
     if not country:
         for c in ('england', 'wales', 'scotland', 'northern ireland'):
             if c in text.lower():
@@ -112,29 +128,44 @@ def get_country(text):
         else:
             c = guess_country(text, default=None)
             if c:
-                print("Guess:", c, "from:", text)
+                #print("Guess:", c, "from:", text)
                 if c['name_short'] != "Channel Islands":
-                    try:
-                        country = pycountry.countries.search_fuzzy(c['name_short'])
-                    except:
-                        try:
-                            country = pycountry.countries.search_fuzzy(c['name_official'])
-                        except:
-                            pass
+                    #try:
+                    #    country = pycountry.countries.search_fuzzy(c['name_short'])
+                    #except:
+                    #    try:
+                    #        country = pycountry.countries.search_fuzzy(c['name_official'])
+                    #    except:
+                    #        pass
+                    country = country_fuzzy_search(country_data, c['name_short'])
+                    if not country:
+                        country = country_fuzzy_search(country_data, c['name_official'])
     if not country:
         if text.lower() == "alderney":
             country = pycountry.countries.lookup("Guernsey")
     #print("Country:", country, "from:", text)
-    return country[0] if isinstance(country, list) else country
+    if isinstance(country, list):
+        country = country[0]
+    #return country[0] if isinstance(country, list) else country
+    if hasattr(country, "alpha_2"):
+        return country.alpha_2
+    elif isinstance(country, str):
+        return country
+    elif hasattr(country, "code"):
+        return country.code
+    else:
+        return None
+    #return country
 
-def subnational(country_code, item):
+def subnational(country_data, country_code, item):
     subnat = None
     if country_code == "CN":
         if "place_registered" in item["data"]["identification"]:
-            try:
-                subnat = pycountry.countries.search_fuzzy(item["data"]["identification"]["place_registered"])
-            except:
-                pass
+            #try:
+            #    subnat = pycountry.countries.search_fuzzy(item["data"]["identification"]["place_registered"])
+            #except:
+            #    pass
+            subnat = subdiv_fuzzy_search(country_data, "CN", item["data"]["identification"]["place_registered"])
     if country_code == "AE":
         if "country_registered" in item["data"]["identification"]:
             if item["data"]["identification"]["country_registered"].lower() in emirates:
@@ -156,24 +187,38 @@ def subnational(country_code, item):
                     name = item["data"]["identification"]["legal_authority"].lower().split("state of")[-1].strip()
                 else:
                     name = item["data"]["identification"]["legal_authority"]
-                try:
-                    subnat = pycountry.subdivisions.search_fuzzy(name)
-                    #subnat = subnat.code
-                except:
-                    pass
+                #try:
+                #    subnat = pycountry.subdivisions.search_fuzzy(name)
+                #    #subnat = subnat.code
+                #except:
+                #    pass
+                #if not subnat:
+                #    try:
+                #        subnat = pycountry.subdivisions.search_fuzzy(
+                #               item["data"]["identification"]["country_registered"])
+                #        if subnat:
+                #            if subnat[0].country_code != country_code: subnat = None
+                #    except:
+                #        pass
+                subnat = subdiv_fuzzy_search(country_data, "US", name)
                 if not subnat:
-                    try:
-                        subnat = pycountry.subdivisions.search_fuzzy(item["data"]["identification"]["country_registered"])
-                        if subnat:
-                            if subnat[0].country_code != country_code: subnat = None
-                    except:
-                        pass
+                    subnat = subdiv_fuzzy_search(country_data, "CA", name)
+                if not subnat:
+                    subnat = subdiv_fuzzy_search(country_data, "US",
+                             item["data"]["identification"]["country_registered"])
+                if not subnat:
+                    subnat = subdiv_fuzzy_search(country_data, "CA",
+                             item["data"]["identification"]["country_registered"])
     #print("Subnational:", subnat)
     if subnat:
-        if hasattr(subnat[0], "alpha_2"):
-            return subnat[0].alpha_2
+        if isinstance(subnat, list):
+            subnat = subnat[0]
+        if hasattr(subnat, "alpha_2"):
+            return subnat.alpha_2
+        elif isinstance(subnat, str):
+            return subnat
         else:
-            return subnat[0].code
+            return subnat.code
     else:
         return None
 
@@ -192,7 +237,7 @@ def is_uk_address(address):
         if "postal_code" in address and validation.is_valid_postcode(address["postal_code"]): return True
     return False
 
-def infer_scheme(item):
+def infer_scheme(country_data, item):
     country = None
     #if ("name" in item["data"] and "address" in item["data"] and "country" in 
     #     item["data"]["address"]):
@@ -233,23 +278,23 @@ def infer_scheme(item):
                 if "uk" in item["data"]["identification"]["legal_form"].lower():
                     return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "company"
         if "country_registered" in item["data"]["identification"]:
-            country = get_country(item["data"]["identification"]["country_registered"])
+            country = get_country(country_data, item["data"]["identification"]["country_registered"])
         if not country and "legal_authority" in item["data"]["identification"]:
-            country = get_country(item["data"]["identification"]["legal_authority"])
+            country = get_country(country_data, item["data"]["identification"]["legal_authority"])
             if not country:
                 country = match_demonyms(item["data"]["identification"]["legal_authority"])
         if not country and "place_registered" in item["data"]["identification"]:
-            country = get_country(item["data"]["identification"]["place_registered"])
+            country = get_country(country_data, item["data"]["identification"]["place_registered"])
         if not country and "country" in item["data"]["address"]:
-            country = get_country(item["data"]["address"]["country"])
+            country = get_country(country_data, item["data"]["address"]["country"])
         if not country and ("country_registered" in item["data"]["identification"] and
                 "channel islands" in item["data"]["identification"]["country_registered"].lower()):
                 if "locality" in item["data"]["address"]:
-                    country = get_country(item["data"]["address"]["locality"])
+                    country = get_country(country_data, item["data"]["address"]["locality"])
         if not country and ("legal_authority" in item["data"]["identification"] and
                 "channel islands" in item["data"]["identification"]["legal_authority"].lower()):
                 if "locality" in item["data"]["address"]:
-                    country = get_country(item["data"]["address"]["locality"])
+                    country = get_country(country_data, item["data"]["address"]["locality"])
         if "legal_form" in item["data"]["identification"]:
             if "Government" in item["data"]["identification"]["legal_form"]:
                 if "Department" in item["data"]["identification"]:
@@ -259,27 +304,30 @@ def infer_scheme(item):
             else:
                 structure = "company"
         if structure == "government":
-            return f"{country.alpha_2}-GOV", "", "", "government"
-        else:
-            country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-            province = subnational(country_code, item)
-            print("Lookup:", country_code, structure)
-            code, name, url = lookup_scheme(country_code, structure, unconfirmed=True, subnational=province)
-            print("Code:", code)
+            #return f"{country.alpha_2}-GOV", "", "", "government"
+            return f"{country}-GOV", "", "", "government"
+        elif country:
+            #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+            province = subnational(country_data, country, item)
+            #print("Lookup:", country, structure)
+            code, name, url = lookup_scheme(country, structure, unconfirmed=True, subnational=province)
+            #print("Code:", code)
             return code, name, url, structure
     if ("name" in item["data"] and "address" in item["data"] and "country" in
          item["data"]["address"]):
         if item["data"]["name"].split()[-1].lower() in ("ag", "sa", "s.a.", "n.v.",
                "s/a", "d.d.", "a.s.", "a/s", "as", "oy", "a.e.", "rt", "pt", "k.k.",
                "spa", "bhd", "ПАО", "a.d.", "ab"):
-            country = get_country(item["data"]["address"]["country"])
-            code, name, url = lookup_scheme(country.alpha_2, "company", unconfirmed=True)
-            return code, name, url, "company"
+            country = get_country(country_data, item["data"]["address"]["country"])
+            if country:
+                code, name, url = lookup_scheme(country, "company", unconfirmed=True)
+                return code, name, url, "company"
+    return None, None, None, None
 
-def build_entity_id(item):
+def build_entity_id(country_data, item):
     if ("identification" in item["data"] and
         "registration_number" in item["data"]["identification"]):
-        code, scheme, url, structure = infer_scheme(item)
+        code, scheme, url, structure = infer_scheme(country_data, item)
         if structure == "government":
             name = item["data"]["name"]
             return f"{code}-{name.replace(' ','-')}"
@@ -295,6 +343,9 @@ def build_entity_id(item):
             else:
                 name = item["data"]["name"].replace(' ','-')
             return f"{code}-{name}"
+        else:
+            link_id = item['data']['links']['self'].split('/')[-1]
+            return f"GB-COH-ENT-{item['company_number']}-{link_id}"
     else:
         link_id = item['data']['links']['self'].split('/')[-1]
         return f"GB-COH-ENT-{item['company_number']}-{link_id}"
@@ -618,6 +669,7 @@ class UKCOHSource():
     def __init__(self):
         #self.scheme_data = load_data()
         self.nationality_data = nationalities.load_data()
+        self.country_data = load_country_data()
 
     def identify_item(self, item):
         """Identify type of GLEIF data"""
@@ -661,12 +713,12 @@ class UKCOHSource():
                     if is_local(item["data"]["identification"]["country_registered"]):
                         return build_entity_local_id(item)
                     else:
-                        return build_entity_id(item)
+                        return build_entity_id(self.country_data, item)
                 if "address" in item["data"] and "country" in item["data"]["address"]:
                     if is_local(item["data"]["address"]["country"]):
                         return build_entity_local_id(item)
                     else:
-                        return build_entity_id(item)
+                        return build_entity_id(self.country_data, item)
                 return build_entity_local_id(item)
         elif item_type == 'relationship':
             link_id = item['data']['links']['self'].split('/')[-1]
@@ -713,19 +765,25 @@ class UKCOHSource():
             else:
                 return item["ContentDate"]
 
-    def item_closed(self, item):
+    def item_closed(self, item, item_type):
         """Is item closed?"""
-        item_type = self.identify_item(item)
-        #print(item)
+        #item_type = self.identify_item(item)
+        #print(item, item_type)
         if item_type == 'entity':
-            return "Active" in item["CompanyStatus"]
-        elif item_type == 'relationship':
-            if "ceased_on" in item["data"]:
-                return False
+            if "CompanyStatus" in item:
+                return "Active" in item["CompanyStatus"]
             else:
+                if "ceased_on" in item["data"]:
+                    return True
+                else:
+                    return False
+        elif item_type in ('relationship', 'person'):
+            if "ceased_on" in item["data"]:
                 return True
-        elif item_type == 'exception':
-            return True
+            else:
+                return False
+        #elif item_type == 'exception':
+        #    return True
 
     def name(self, item, item_type):
         """Name for GLEIF item"""
@@ -767,10 +825,10 @@ class UKCOHSource():
             if is_local(item["data"]["identification"]["country_registered"]):
                 return "GB"
             else:
-                country = get_country(item["data"]["identification"]["country_registered"])
+                country = get_country(self.country_data, item["data"]["identification"]["country_registered"])
                 if country:
-                    country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                    return country_code
+                    #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    return country
         if "identification" in item["data"] and "legal_authority" in item["data"]["identification"]:
             if is_local(item["data"]["identification"]["legal_authority"]):
                 return "GB"
@@ -781,33 +839,33 @@ class UKCOHSource():
                     name = item["data"]["identification"]["legal_authority"].lower().split("law")[0].strip()
                 else:
                     name = item["data"]["identification"]["legal_authority"].lower()
-                country = get_country(item["data"]["identification"]["legal_authority"])
+                country = get_country(self.country_data, item["data"]["identification"]["legal_authority"])
                 if country:
-                    country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                    return country_code
+                    #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    return country
                 else:
                     country = match_demonyms(item["data"]["identification"]["legal_authority"])
                     if country:
-                        country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                        return country_code
+                        #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                        return country
         if "address" in item["data"] and "country" in item["data"]["address"]:
             if is_local(item["data"]["address"]["country"]):
                 return "GB"
             else:
-                country = get_country(item["data"]["address"]["country"])
+                country = get_country(self.country_data, item["data"]["address"]["country"])
                 if country:
-                    country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                    return country_code
+                    #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    return country
         if "address" in item["data"] and "locality" in item["data"]["address"]:
-            country = get_country(item["data"]["address"]["locality"])
+            country = get_country(self.country_data, item["data"]["address"]["locality"])
             if country:
-                country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                return country_code
+                #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                return country
         if "address" in item["data"] and "region" in item["data"]["address"]:
-            country = get_country(item["data"]["address"]["region"])
+            country = get_country(self.country_data, item["data"]["address"]["region"])
             if country:
-                 country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
-                 return country_code
+                 #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                 return country
         if "address" in item["data"]:
             if is_uk_address(item["data"]["address"]):
                 return "GB"
@@ -824,7 +882,7 @@ class UKCOHSource():
                         if is_local(item["data"]["identification"][key]):
                             return 'GB-COH', "Companies House", "https://www.gov.uk/government/organisations/companies-house"
                         else:
-                            code, name, url, structure = infer_scheme(item)
+                            code, name, url, structure = infer_scheme(self.country_data, item)
                             return code, name, url
                 return None, None, None
             else:
@@ -915,9 +973,9 @@ class UKCOHSource():
             elif data["RegAddress_Country"].lower() == "united kingdom":
                 address['country'] = "GB"
             else:
-                country = get_country(data["RegAddress_Country"])
+                country = get_country(self.country_data, data["RegAddress_Country"])
                 if country:
-                    address['country'] = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    address['country'] = country #.alpha_2 if hasattr(country, "alpha_2") else country.code
                 else:
                     address['country'] = data["RegAddress_Country"]
         if not 'country' in address:
@@ -951,9 +1009,9 @@ class UKCOHSource():
                     address['region'] = address_data["country"]
                 address['country'] = "GB"
             else:
-                country = get_country(address_data["country"])
+                country = get_country(self.country_data, address_data["country"])
                 if country:
-                    address['country'] = country.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    address['country'] = country #.alpha_2 if hasattr(country, "alpha_2") else country.code
                 else:
                     address['country'] = address_data["country"]
         if not 'country' in address:
