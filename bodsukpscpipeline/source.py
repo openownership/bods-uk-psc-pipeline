@@ -670,6 +670,7 @@ class UKCOHSource():
         #self.scheme_data = load_data()
         self.nationality_data = nationalities.load_data()
         self.country_data = load_country_data()
+        self.cached_record_id = None
 
     def identify_item(self, item):
         """Identify type of GLEIF data"""
@@ -700,7 +701,9 @@ class UKCOHSource():
         #item_type = self.identify_item(item)
         if item_type == 'entity':
             if 'CompanyNumber' in item:
-                return f"GB-COH-{item['CompanyNumber']}"
+                record_id = f"GB-COH-{item['CompanyNumber']}"
+                self.cached_record_id = record_id
+                return record_id
             else:
                 #if ("identification" in item["data"] and
                 #    "registration_number" in item["data"]["identification"]):
@@ -711,24 +714,40 @@ class UKCOHSource():
                 if ("identification" in item["data"] and "country_registered" in item["data"]["identification"] 
                     and not item["data"]["identification"]["country_registered"].lower() in ("n/a", "na")):
                     if is_local(item["data"]["identification"]["country_registered"]):
-                        return build_entity_local_id(item)
+                        record_id = build_entity_local_id(item)
+                        self.cached_record_id = record_id
+                        return record_id
                     else:
-                        return build_entity_id(self.country_data, item)
+                        record_id = build_entity_id(self.country_data, item)
+                        self.cached_record_id = record_id
+                        return record_id
                 if "address" in item["data"] and "country" in item["data"]["address"]:
                     if is_local(item["data"]["address"]["country"]):
-                        return build_entity_local_id(item)
+                        record_id = build_entity_local_id(item)
+                        self.cached_record_id = record_id
+                        return record_id
                     else:
-                        return build_entity_id(self.country_data, item)
-                return build_entity_local_id(item)
+                        record_id = build_entity_id(self.country_data, item)
+                        self.cached_record_id = record_id
+                        return record_id
+                record_id = build_entity_local_id(item)
+                self.cached_record_id = record_id
+                return record_id
         elif item_type == 'relationship':
             link_id = item['data']['links']['self'].split('/')[-1]
-            return f"GB-COH-REL-{item['company_number']}-{link_id}"
+            record_id = f"GB-COH-REL-{item['company_number']}-{link_id}"
+            self.cached_record_id = record_id
+            return record_id
         elif item_type == 'person':
             link_id = item['data']['links']['self'].split('/')[-1]
-            return f"GB-COH-PER-{item['company_number']}-{link_id}"
+            record_id = f"GB-COH-PER-{item['company_number']}-{link_id}"
+            self.cached_record_id = record_id
+            return record_id
         elif item_type == 'exception':
             link_id = item['data']['links']['self'].split('/')[-1]
-            return f"GB-COH-REL-{item['company_number']}-{link_id}"
+            record_id = f"GB-COH-REL-{item['company_number']}-{link_id}"
+            self.cached_record_id = record_id
+            return record_id
 
     def relationship_id(self, item):
         """Identifier for GLEIF relationship"""
@@ -764,6 +783,26 @@ class UKCOHSource():
                 return item["data"]["notified_on"]
             else:
                 return item["ContentDate"]
+
+    def statement_id(self, item, item_type):
+        """Unhashed statementId for GLEIF item"""
+        updated = self.item_updated(item)
+        if item_type == 'entity':
+            return f"{self.cached_record_id}-{updated}"
+        elif item_type == 'relationship':
+            #start = item["Relationship"]["StartNode"]['NodeID']
+            #end = item["Relationship"]["EndNode"]['NodeID']
+            #rtype = relationship_type(item)
+            #raw_rtype = item["Relationship"]['RelationshipType']
+            #return f"XI-LEI-RR-{rtype}-{start}-{end}-{raw_rtype}-{updated}"
+            return f"{self.cached_record_id}-{updated}"
+        else:
+            #start = item["LEI"]
+            #rtype = exception_type(item)
+            #reason = item['ExceptionReason']
+            #ref = item['ExceptionReference'] if "ExceptionReference" in item else 'None'
+            #return f"XI-LEI-RR-{rtype}-{start}-{reason}-{ref}-{updated}"
+            return f"{self.cached_record_id}-{updated}"
 
     def item_closed(self, item, item_type):
         """Is item closed?"""
