@@ -8,6 +8,11 @@ from bodspipelines.infrastructure.utils import current_date_iso
 from bodsukpscpipeline import nationalities
 from .utils import country_code, load_country_data, country_fuzzy_search, subdiv_fuzzy_search
 
+def fix_company_number(number):
+    if len(number) == 7:
+        return f"0{number}"
+    return number
+
 emirates = {"abu dhabi": 'AE-AZ',
          'abū zaby': 'AE-AZ',
          "ajman": 'AE-AJ',
@@ -354,10 +359,12 @@ def build_entity_local_id(item):
     if ("identification" in item["data"] and
         "registration_number" in item["data"]["identification"] and
         not item["data"]["identification"]["registration_number"].lower() in ("n/a", "na")):
-        return f"GB-COH-{item['data']['identification']['registration_number']}"
+        company_number = fix_company_number(item['data']['identification']['registration_number'])
+        return f"GB-COH-{company_number}"
     else:
         link_id = item['data']['links']['self'].split('/')[-1]
-        return f"GB-COH-ENT-{item['company_number']}-{link_id}"
+        company_number = fix_company_number(item['company_number'])
+        return f"GB-COH-ENT-{company_number}-{link_id}"
 
 def is_local(country_name):
     if country_name.strip().lower() in ("united kingdom", "uk"):
@@ -701,7 +708,8 @@ class UKCOHSource():
         #item_type = self.identify_item(item)
         if item_type == 'entity':
             if 'CompanyNumber' in item:
-                record_id = f"GB-COH-{item['CompanyNumber']}"
+                company_number = fix_company_number(item['CompanyNumber'])
+                record_id = f"GB-COH-{company_number}"
                 self.cached_record_id = record_id
                 return record_id
             else:
@@ -735,24 +743,28 @@ class UKCOHSource():
                 return record_id
         elif item_type == 'relationship':
             link_id = item['data']['links']['self'].split('/')[-1]
-            record_id = f"GB-COH-REL-{item['company_number']}-{link_id}"
+            company_number = fix_company_number(item['company_number'])
+            record_id = f"GB-COH-REL-{company_number}-{link_id}"
             self.cached_record_id = record_id
             return record_id
         elif item_type == 'person':
             link_id = item['data']['links']['self'].split('/')[-1]
-            record_id = f"GB-COH-PER-{item['company_number']}-{link_id}"
+            company_number = fix_company_number(item['company_number'])
+            record_id = f"GB-COH-PER-{company_number}-{link_id}"
             self.cached_record_id = record_id
             return record_id
         elif item_type == 'exception':
             link_id = item['data']['links']['self'].split('/')[-1]
-            record_id = f"GB-COH-REL-{item['company_number']}-{link_id}"
+            company_number = fix_company_number(item['company_number'])
+            record_id = f"GB-COH-REL-{company_number}-{link_id}"
             self.cached_record_id = record_id
             return record_id
 
     def relationship_id(self, item):
         """Identifier for GLEIF relationship"""
         link_id = item['data']['links']['self'].split('/')[-1]
-        return f"GB-COH-REL-{item['company_number']}-{link_id}"
+        company_number = fix_company_number(item['company_number'])
+        return f"GB-COH-REL-{company_number}-{link_id}"
 
     def exception_id(self, record_id):
         """Relationship coresponding recordId for exception"""
@@ -763,11 +775,14 @@ class UKCOHSource():
         """declarationSubject for GLEIF item"""
         item_type = self.identify_item(item)
         if item_type == 'entity':
-            return f"GB-COH-{item['CompanyNumber']}"
+            company_number = fix_company_number(item['CompanyNumber'])
+            return f"GB-COH-{company_number}"
         elif item_type == 'relationship':
-            return f"GB-COH-{item['company_number']}"
+            company_number = fix_company_number(item['company_number'])
+            return f"GB-COH-{company_number}"
         elif item_type == 'exception':
-            return f"GB-COH-{item['company_number']}"
+            company_number = fix_company_number(item['company_number'])
+            return f"GB-COH-{company_number}"
 
     def item_updated(self, item):
         """statementDate for GLEIF item"""
@@ -810,7 +825,7 @@ class UKCOHSource():
         #print(item, item_type)
         if item_type == 'entity':
             if "CompanyStatus" in item:
-                return "Active" in item["CompanyStatus"]
+                return not "Active" in item["CompanyStatus"]
             else:
                 if "ceased_on" in item["data"]:
                     return True
@@ -948,11 +963,13 @@ class UKCOHSource():
         """Get entity identifier"""
         if item_type == "entity":
             if 'CompanyNumber' in item:
-                return item['CompanyNumber']
+                company_number = fix_company_number(item['CompanyNumber'])
+                return company_number
             else:
                 if ("identification" in item["data"] and "registration_number" in item["data"]["identification"]
                     and not item["data"]["identification"]["registration_number"].lower() in ("n/a", "na")):
-                    return item["data"]["identification"]["registration_number"]
+                    company_number = fix_company_number(item["data"]["identification"]["registration_number"])
+                    return company_number
                 else:
                     return None
         else:
@@ -1094,10 +1111,11 @@ class UKCOHSource():
     def relationship_subject(self, item) -> dict:
         """Get relationship subject"""
         item_type = self.identify_item(item)
+        company_number = fix_company_number(item['company_number'])
         if item_type == "relationship":
-            return f"GB-COH-{item['company_number']}"
+            return f"GB-COH-{company_number}"
         else:
-            return f"GB-COH-{item['company_number']}"
+            return f"GB-COH-{company_number}"
 
     def relationship_interested_party(self, item) -> dict:
         """Get relationship subject"""
@@ -1114,7 +1132,8 @@ class UKCOHSource():
                                     "super-secure-person-with-significant-control",
                                     "super-secure-beneficial-owner"):
                 link_id = item['data']['links']['self'].split('/')[-1]
-                return f"GB-COH-REL-{item['company_number']}-{link_id}"
+                company_number = fix_company_number(item['company_number'])
+                return f"GB-COH-REL-{company_number}-{link_id}"
             #return f"XI-LEI-{item['Relationship']['EndNode']['NodeID']}"
         else:
             return exception_unspecified(item)
