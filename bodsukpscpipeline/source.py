@@ -11,6 +11,8 @@ from .utils import country_code, load_country_data, country_fuzzy_search, subdiv
 def fix_company_number(number):
     if len(number) == 7:
         return f"0{number}"
+    elif len(number) == 6:
+        return f"00{number}"
     return number
 
 emirates = {"abu dhabi": 'AE-AZ',
@@ -825,17 +827,17 @@ class UKCOHSource():
         #print(item, item_type)
         if item_type == 'entity':
             if "CompanyStatus" in item:
-                return not "Active" in item["CompanyStatus"]
+                return not "Active" in item["CompanyStatus"], None
             else:
                 if "ceased_on" in item["data"]:
-                    return True
+                    return True, "deletion"
                 else:
-                    return False
+                    return False, None
         elif item_type in ('relationship', 'person'):
             if "ceased_on" in item["data"]:
-                return True
+                return True, "deletion"
             else:
-                return False
+                return False, None
         #elif item_type == 'exception':
         #    return True
 
@@ -1302,3 +1304,11 @@ class UKCOHSource():
             if "public" in company_type and "company" in company_type:
                 return True
         return False
+
+    def annotation_description(self, reason, record_type, record_id):
+        """Descriptions for annotations"""
+        if reason == "replacement":
+            #record_type = "relationship" if "Relationship" in item else "exception"
+            return f"Statement closed due to a new UK PSC {record_type} ({record_id}) replacing this record"
+        elif reason == "deletion":
+            return "Statement closed due to deletion of UK PSC record"
