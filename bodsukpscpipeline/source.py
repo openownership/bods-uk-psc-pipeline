@@ -673,6 +673,18 @@ def interest_type(item):
 #            interest_share["minimum"] = 75
 #            return interest_share
 
+def is_uk_company(item):
+    if ("identification" in item["data"] and "registration_number" in item["data"]["identification"] and
+        not item["data"]["identification"]["registration_number"].lower() in ("n/a", "na")):
+        if ("country_registered" in item["data"]["identification"]
+            and not item["data"]["identification"]["country_registered"].lower() in ("n/a", "na")):
+            if is_local(item["data"]["identification"]["country_registered"]):
+                return True
+        if "address" in item["data"] and "country" in item["data"]["address"]:
+            if is_local(item["data"]["address"]["country"]):
+                return True
+    return False
+
 class UKCOHSource():
     """UK COH specific methods"""
     def __init__(self):
@@ -1102,9 +1114,10 @@ class UKCOHSource():
                                     "corporate-entity-beneficial-owner",
                                     "legal-person-person-with-significant-control",
                                     "legal-person-beneficial-owner"):
-            if ("identification" in item["data"] and
-                "place_registered" in item["data"]["identification"] and
-                "Companies House" in item["data"]["identification"]["place_registered"]):
+            #if ("identification" in item["data"] and
+            #    "place_registered" in item["data"]["identification"] and
+            #    "Companies House" in item["data"]["identification"]["place_registered"]):
+            if is_uk_company(item):
                 return None
             else:
                 return 'entity'
@@ -1135,7 +1148,7 @@ class UKCOHSource():
                                     "super-secure-beneficial-owner"):
                 link_id = item['data']['links']['self'].split('/')[-1]
                 company_number = fix_company_number(item['company_number'])
-                return f"GB-COH-REL-{company_number}-{link_id}"
+                return f"GB-COH-PER-{company_number}-{link_id}"
             #return f"XI-LEI-{item['Relationship']['EndNode']['NodeID']}"
         else:
             return exception_unspecified(item)
