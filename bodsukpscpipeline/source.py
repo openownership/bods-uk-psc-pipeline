@@ -842,12 +842,12 @@ class UKCOHSource():
                 return not "Active" in item["CompanyStatus"], None
             else:
                 if "ceased_on" in item["data"]:
-                    return True, "deletion"
+                    return True, "retired"
                 else:
                     return False, None
         elif item_type in ('relationship', 'person'):
             if "ceased_on" in item["data"]:
-                return True, "deletion"
+                return True, "retired"
             else:
                 return False, None
         #elif item_type == 'exception':
@@ -937,7 +937,8 @@ class UKCOHSource():
         if "address" in item["data"]:
             if is_uk_address(item["data"]["address"]):
                 return "GB"
-        print(item)
+        #print(item)
+        return None
 
     def scheme(self, item, item_type) -> str:
         """Get scheme"""
@@ -1325,3 +1326,5 @@ class UKCOHSource():
             return f"Statement closed due to a new UK PSC {record_type} ({record_id}) replacing this record"
         elif reason == "deletion":
             return "Statement closed due to deletion of UK PSC record"
+        elif reason == "retired":
+            return "Statement closed due to retirement of UK PSC record"
