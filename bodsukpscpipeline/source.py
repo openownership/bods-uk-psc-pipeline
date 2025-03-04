@@ -841,7 +841,7 @@ class UKCOHSource():
         #print(item, item_type)
         if item_type == 'entity':
             if "CompanyStatus" in item:
-                if item["DissolutionDate"]:
+                if not item["DissolutionDate"]:
                     return False, None
                 else:
                     return True, "retired"
