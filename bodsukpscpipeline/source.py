@@ -5,7 +5,9 @@ from thefuzz import fuzz
 
 from bodspipelines.infrastructure.schemes.data import load_data, get_scheme, lookup_scheme
 from bodspipelines.infrastructure.utils import current_date_iso
+#from bodspipelines.infrastructure.source import Source
 from bodsukpscpipeline import nationalities
+
 from .utils import country_code, load_country_data, country_fuzzy_search, subdiv_fuzzy_search
 
 def fix_company_number(number):
@@ -839,7 +841,11 @@ class UKCOHSource():
         #print(item, item_type)
         if item_type == 'entity':
             if "CompanyStatus" in item:
-                return not "Active" in item["CompanyStatus"], None
+                if item["DissolutionDate"]:
+                    return False, None
+                else:
+                    return True, "retired"
+                #return not "Active" in item["CompanyStatus"], None
             else:
                 if "ceased_on" in item["data"]:
                     return True, "retired"
@@ -1195,6 +1201,13 @@ class UKCOHSource():
     def interest_types(self, item):
         """Get interest types"""
         return interest_type(item)
+
+    def interest_ends(self, item):
+        """Interest ends date"""
+        if "ceased_on" in item["data"] and item["data"]["ceased_on"]:
+            return item["data"]["ceased_on"]
+        else:
+            return None
 
     def interest_details(self, item):
         """Get interest details"""
