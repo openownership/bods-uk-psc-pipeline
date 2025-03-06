@@ -17,15 +17,6 @@ from bodspipelines.infrastructure.updates import ProcessUpdates
 from bodspipelines.infrastructure.indexes import bods_index_properties
 from bodspipelines.infrastructure.utils import identify_bods, load_last_run, save_run
 
-#from bodspipelines.pipelines.gleif.indexes import gleif_index_properties
-#from bodspipelines.pipelines.gleif.transforms import Gleif2Bods, AddContentDate, RemoveEmptyExtension
-#from bodspipelines.pipelines.gleif.indexes import (lei_properties, rr_properties, repex_properties,
-#                                          match_lei, match_rr, match_repex,
-#                                          id_lei, id_rr, id_repex)
-#from bodspipelines.pipelines.gleif.utils import gleif_download_link, GLEIFData, identify_gleif
-#from bodspipelines.pipelines.gleif.updates import GleifUpdates
-#from bodspipelines.infrastructure.utils import identify_bods, load_last_run, save_run
-
 from .indexes import uk_psc_index_properties
 from .source import UKCOHSource
 from .utils import UKCOHData, identify_uk_coh, psc_exclude
@@ -84,9 +75,8 @@ bods_output_new = NewOutput(storage=Storage(storage=bods_storage),
 transform_stage = Stage(name="transform",
               sources=[uk_psc_source],
               processors=[ProcessUpdates(id_name='GB-COH',
-                                         transform=UKCOHSource(), # Gleif2Bods(identify=identify_gleif),
+                                         transform=UKCOHSource(),
                                          storage=Storage(storage=bods_storage),
-                                         #updates=GleifUpdates()
                                          )],
               outputs=[bods_output_new])
 

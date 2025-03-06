@@ -5,7 +5,7 @@ from thefuzz import fuzz
 
 from bodspipelines.infrastructure.schemes.data import load_data, get_scheme, lookup_scheme
 from bodspipelines.infrastructure.utils import current_date_iso
-#from bodspipelines.infrastructure.source import Source
+from bodspipelines.infrastructure.source import Source
 from bodsukpscpipeline import nationalities
 
 from .utils import country_code, load_country_data, country_fuzzy_search, subdiv_fuzzy_search
@@ -37,13 +37,11 @@ def match_demonyms(text):
         if d in text.lower():
             code = nationalities.state_demonyms[d]
             return code
-            #return pycountry.countries.get(alpha_2=code)
     data = {"english": "GB", "scottish": "GB", "welsh": "GB"}
     for d in data:
         if d in text.lower():
             code = data[d]
             return code
-            #return pycountry.countries.get(alpha_2=code)
     return None
 
 def fuzzy_match_subdiv(country_code, text):
@@ -58,45 +56,21 @@ def get_country(country_data, text):
         state_text = text.lower().split("state of")[-1].strip()
         if "," in state_text:
             state_text = state_text.split(",")[0].strip()
-        #try:
-        #    state = pycountry.subdivisions.search_fuzzy(state_text)
-        #    country = state
-        #except:
-        #    state = fuzzy_match_subdiv("US", state_text)
-        #    if state: country = state
         state = subdiv_fuzzy_search(country_data, "US", state_text)
         if state: country = state
     if not country and (text.lower() in emirates or "u.a.e" in text.lower() or "uae" in text.lower()):
         country = pycountry.countries.get(alpha_2='AE')
     if not country and "," in text:
         if text.split(",")[-1].strip().lower() in ("usa", "us", "united states"):
-            #print("Searching for:", text.split(",")[0].lower())
-            #try:
-            #    state = pycountry.subdivisions.search_fuzzy(text.split(",")[0].strip().lower())
-            #    country = state
-            #except:
-            #    state = fuzzy_match_subdiv("US", text.split(",")[0].strip().lower())
-            #    if state: country = state
             state = subdiv_fuzzy_search(country_data, "US", text.split(",")[0].strip().lower())
             if state: country = state
         else:
-            #try:
-            #    country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
-            #except LookupError:
-            #    pass
             country = country_fuzzy_search(country_data, text.split(",")[-1].strip().lower())
     if not country and "-" in text:
         parts = [part.strip() for part in text.split("-")]
         if any([parts for part in parts if part.lower() in ("usa", "us", "united states")]):
             for part in parts:
                 if not part.lower() in ("usa", "us", "united states"):
-                    #try:
-                    #    state = pycountry.subdivisions.search_fuzzy(part.lower())
-                    #    if state:
-                    #        country = state
-                    #        break
-                    #except:
-                    #    pass
                     state = subdiv_fuzzy_search(country_data, "US", part.lower())
                     if state:
                         country = state
@@ -104,28 +78,13 @@ def get_country(country_data, text):
             if not country:
                 for part in parts:
                     if part.lower() in ("usa", "us", "united states"):
-                        #try:
-                        #    country = pycountry.countries.search_fuzzy(text.split(",")[-1].strip().lower())
-                        #    break
-                        #except LookupError:
-                        #    pass
                         country = country_fuzzy_search(country_data, text.split(",")[-1].strip().lower())
                         if country: break
         else:
             for part in parts:
-                #try:
-                #    country = pycountry.countries.search_fuzzy(part.lower())
-                #except LookupError:
-                #    pass
                 country = country_fuzzy_search(country_data, part.lower())
                 if country: break
     if not country:
-        #try:
-        #     country = pycountry.countries.search_fuzzy(text)
-        #except LookupError:
-        #    for c in pycountry.countries:
-        #        if c.name.lower() in text.lower():
-        #             country = c
         country = country_fuzzy_search(country_data, text)
     if not country:
         for c in ('england', 'wales', 'scotland', 'northern ireland'):
@@ -137,25 +96,15 @@ def get_country(country_data, text):
         else:
             c = guess_country(text, default=None)
             if c:
-                #print("Guess:", c, "from:", text)
                 if c['name_short'] != "Channel Islands":
-                    #try:
-                    #    country = pycountry.countries.search_fuzzy(c['name_short'])
-                    #except:
-                    #    try:
-                    #        country = pycountry.countries.search_fuzzy(c['name_official'])
-                    #    except:
-                    #        pass
                     country = country_fuzzy_search(country_data, c['name_short'])
                     if not country:
                         country = country_fuzzy_search(country_data, c['name_official'])
     if not country:
         if text.lower() == "alderney":
             country = pycountry.countries.lookup("Guernsey")
-    #print("Country:", country, "from:", text)
     if isinstance(country, list):
         country = country[0]
-    #return country[0] if isinstance(country, list) else country
     if hasattr(country, "alpha_2"):
         return country.alpha_2
     elif isinstance(country, str):
@@ -164,16 +113,11 @@ def get_country(country_data, text):
         return country.code
     else:
         return None
-    #return country
 
 def subnational(country_data, country_code, item):
     subnat = None
     if country_code == "CN":
         if "place_registered" in item["data"]["identification"]:
-            #try:
-            #    subnat = pycountry.countries.search_fuzzy(item["data"]["identification"]["place_registered"])
-            #except:
-            #    pass
             subnat = subdiv_fuzzy_search(country_data, "CN", item["data"]["identification"]["place_registered"])
     if country_code == "AE":
         if "country_registered" in item["data"]["identification"]:
@@ -181,12 +125,6 @@ def subnational(country_data, country_code, item):
                 subnat = [pycountry.subdivisions.get(
                              code=emirates[item["data"]["identification"]["country_registered"].lower()]
                          )]
-        #print("AE:", item["data"]["identification"])
-        #if "country_registered" in item["data"]["identification"]:
-        #    try:
-        #        subnat = pycountry.subdivisions.search_fuzzy(item["data"]["identification"]["country_registered"])
-        #    except:
-        #        pass
     if country_code in ("CA", "US"):
         if ("legal_authority" in item["data"]["identification"] and "country_registered" 
             in item["data"]["identification"]):
@@ -196,19 +134,6 @@ def subnational(country_data, country_code, item):
                     name = item["data"]["identification"]["legal_authority"].lower().split("state of")[-1].strip()
                 else:
                     name = item["data"]["identification"]["legal_authority"]
-                #try:
-                #    subnat = pycountry.subdivisions.search_fuzzy(name)
-                #    #subnat = subnat.code
-                #except:
-                #    pass
-                #if not subnat:
-                #    try:
-                #        subnat = pycountry.subdivisions.search_fuzzy(
-                #               item["data"]["identification"]["country_registered"])
-                #        if subnat:
-                #            if subnat[0].country_code != country_code: subnat = None
-                #    except:
-                #        pass
                 subnat = subdiv_fuzzy_search(country_data, "US", name)
                 if not subnat:
                     subnat = subdiv_fuzzy_search(country_data, "CA", name)
@@ -218,7 +143,6 @@ def subnational(country_data, country_code, item):
                 if not subnat:
                     subnat = subdiv_fuzzy_search(country_data, "CA",
                              item["data"]["identification"]["country_registered"])
-    #print("Subnational:", subnat)
     if subnat:
         if isinstance(subnat, list):
             subnat = subnat[0]
@@ -248,34 +172,16 @@ def is_uk_address(address):
 
 def infer_scheme(country_data, item):
     country = None
-    #if ("name" in item["data"] and "address" in item["data"] and "country" in 
-    #     item["data"]["address"]):
-    #    if item["data"]["name"].split()[-1].lower() in ("ag", "sa", "s.a.", "n.v.",
-    #           "s/a", "d.d.", "a.s.", "a/s", "as", "oy", "a.e.", "rt", "pt", "k.k.",
-    #           "spa", "bhd", "ПАО", "a.d.", "ab"):
-    #        country = get_country(item["data"]["address"]["country"])
-    #        code, name = lookup_scheme(country.alpha_2, "company", unconfirmed=True)
-    #        return code, "company"
     if "identification" in item["data"]:
-        #print("Ident:", item["data"]["identification"])
-        #if ("legal_authority" in item["data"]["identification"] and
-        #    item["data"]["identification"]["legal_authority"] in ("Companies Act",
-        #                                    "Companies Act 2006", "English Law",
-        #                                    "Uk Companies Act 2006", "UK Companies Act 2006",
-        #                                    'Companies Act 1985', "Limited Companys Act 2006",
-        #                                    "Companies Acts", "Companies Act 2014",
-        #                                    "Company Act 2006")):
         if uk_legal_authority(item):
             if "legal_form" in item["data"]["identification"]:
                 for name in ("company", "compnay", "compamy", "companies", "limited"):
                     if name in item["data"]["identification"]["legal_form"].lower():
                         return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "company"
-                        #structure = "company"
                 if "local authority" in item["data"]["identification"]["legal_form"].lower():
                     return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "government"
             else:
                 return "GB-COH", "Companies House", "https://www.gov.uk/government/organisations/companies-house", "company"
-                #structure = "company"
         if ("legal_authority" in item["data"]["identification"] and
             item["data"]["identification"]["legal_authority"] in ("Trust Acts", "Trustees Acts")):
             if "legal_form" in item["data"]["identification"]:
@@ -313,14 +219,10 @@ def infer_scheme(country_data, item):
             else:
                 structure = "company"
         if structure == "government":
-            #return f"{country.alpha_2}-GOV", "", "", "government"
             return f"{country}-GOV", "", "", "government"
         elif country:
-            #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
             province = subnational(country_data, country, item)
-            #print("Lookup:", country, structure)
             code, name, url = lookup_scheme(country, structure, unconfirmed=True, subnational=province)
-            #print("Code:", code)
             return code, name, url, structure
     if ("name" in item["data"] and "address" in item["data"] and "country" in
          item["data"]["address"]):
@@ -444,7 +346,6 @@ def exception_unspecified(item):
             return {"reason":"interestedPartyHasNotProvidedInformation","description":"Exception Reason: The partnership has given a notice under Regulation 10 of The Scottish Partnerships (Register of People with Significant Control) Regulations 2017 which has not been complied with"}
         elif item["data"]["statement"] == "information-not-provided-for-at-least-one-beneficial-owner":
             return {"reason":"unknown","description":"Exception Reason: All beneficial owners have been identified but only some required information can be provided"}
-        # Not currently used
         elif item["data"]["statement"] == "psc-has-failed-to-confirm-changed-details-partnership":
             return {"reason":"subjectUnableToConfirmOrIdentifyBeneficialOwner","description":"Exception Reason: The partnership has given a notice under Regulation 11 of The Scottish Partnerships (Register of People with Significant Control) Regulations 2017 which has not been complied with"}
         elif item["data"]["statement"] == "restrictions-notice-issued-to-psc-partnership":
@@ -455,24 +356,6 @@ def exception_unspecified(item):
         return {"reason":"interestedPartyExemptFromDisclosure","description":"Exception Reason: Super secure beneficial owner"}
     elif item["data"]["kind"] == "exemptions":
         return {"reason":"interestedPartyExemptFromDisclosure","description": ""} # Include exemptions?
-
-    #if item['ExceptionReason'] == 'NO_LEI':
-    #    return {"reason":"interestedPartyExemptFromDisclosure","description":"Exception Reason: NO_LEI. This parent legal entity does not consent to obtain an LEI or to authorize its child entity to obtain an LEI on its behalf."}
-    #elif item['ExceptionReason'] == 'NATURAL_PERSONS':
-    #    return {"reason":"interestedPartyExemptFromDisclosure","description":"Exception Reason: NATURAL_PERSONS. The entity is controlled by a natural person(s) without any intermediate legal entity."}
-    #elif item['ExceptionReason'] == 'NON_CONSOLIDATING':
-    #    return {"reason":"interestedPartyExemptFromDisclosure","description":"Exception Reason: NON_CONSOLIDATING. The legal entity or entities are not obliged to provide consolidated accounts in relation to the entity they control."}
-    #elif item['ExceptionReason'] == 'NO_KNOWN_PERSON':
-    #    return {"reason":"informationUnknownToPublisher","description":"Exception Reason: NO KNOWN_PERSON. There is no known person(s) controlling the entity."}
-    #elif item['ExceptionReason'] == 'NON_PUBLIC':
-    #    return {"reason":"interestedPartyExemptFromDisclosure","description":"Exception Reason: NON_PUBLIC. Information about the relationship with the controlling entity is not public."}
-
-#def get_scheme(scheme_id, scheme_data):
-#    match = [scheme for scheme in scheme_data if scheme[0] == scheme_id]
-#    if match:
-#        country = match[0][2]
-#        return lookup_scheme(country, "company")
-#    return None, None
 
 def interest_share(control):
     interest_share = {"maximum": None,
@@ -661,20 +544,6 @@ def interest_type(item):
                 interest_types["otherInfluenceOrControl"] = interest_share(control)
     return interest_types
 
-#def interest_share(item):
-#    interest_share = {"maximum": None,
-#                      "minimum": None,
-#                      "exclusiveMinimum": None,
-#                      "exclusiveMaximum": None}
-#    if not "natures_of_control" in item["data"]: return interest_share
-#    controls = item["data"]["natures_of_control"]
-#    for control in controls:
-#
-#        if "75-to-100-percent" in control:
-#            interest_share["maximum"] = 100
-#            interest_share["minimum"] = 75
-#            return interest_share
-
 def is_uk_company(item):
     if ("identification" in item["data"] and "registration_number" in item["data"]["identification"] and
         not item["data"]["identification"]["registration_number"].lower() in ("n/a", "na")):
@@ -687,22 +556,19 @@ def is_uk_company(item):
                 return True
     return False
 
-class UKCOHSource():
+class UKCOHSource(Source):
     """UK COH specific methods"""
     def __init__(self):
-        #self.scheme_data = load_data()
         self.nationality_data = nationalities.load_data()
         self.country_data = load_country_data()
         self.cached_record_id = None
 
     def identify_item(self, item):
         """Identify type of GLEIF data"""
-        #print("Item:", item)
         if 'CompanyNumber' in item:
             return 'entity'
         elif "company_number" in item:
             if item["data"]["kind"] in (
-                #"super-secure-person-with-significant-control", "super-secure-beneficial-owner",
                 "persons-with-significant-control-statement", "exemptions"):
                 return 'exception'
             else:
@@ -714,14 +580,11 @@ class UKCOHSource():
         else:
             if "kind" in item["data"] and item["data"]["kind"] == "totals#persons-of-significant-control-snapshot":
                 return True
-            #elif "ceased_on" in item["data"] and item["data"]["ceased_on"]:
-            #    return True
             else:
                 return False
 
     def record_id(self, item, item_type):
         """recordId for UK COH item"""
-        #item_type = self.identify_item(item)
         if item_type == 'entity':
             if 'CompanyNumber' in item:
                 company_number = fix_company_number(item['CompanyNumber'])
@@ -729,13 +592,7 @@ class UKCOHSource():
                 self.cached_record_id = record_id
                 return record_id
             else:
-                #if ("identification" in item["data"] and
-                #    "registration_number" in item["data"]["identification"]):
-                #    return f"GB-COH-{item['data']['identification']['registration_number']}"
-                #else:
-                #    link_id = item['data']['links']['self'].split('/')[-1]
-                #    return f"GB-COH-ENT-{item['company_number']}-{link_id}"
-                if ("identification" in item["data"] and "country_registered" in item["data"]["identification"] 
+                if ("identification" in item["data"] and "country_registered" in item["data"]["identification"]
                     and not item["data"]["identification"]["country_registered"].lower() in ("n/a", "na")):
                     if is_local(item["data"]["identification"]["country_registered"]):
                         record_id = build_entity_local_id(item)
@@ -784,7 +641,6 @@ class UKCOHSource():
 
     def exception_id(self, record_id):
         """Relationship coresponding recordId for exception"""
-        #return record_id.replace('-RR-', '-RE-')
         return record_id.rsplit("-", 1)[0].replace("-RR-", "-RE-")
 
     def declaration_subject(self, item):
@@ -821,31 +677,18 @@ class UKCOHSource():
         if item_type == 'entity':
             return f"{self.cached_record_id}-{updated}"
         elif item_type == 'relationship':
-            #start = item["Relationship"]["StartNode"]['NodeID']
-            #end = item["Relationship"]["EndNode"]['NodeID']
-            #rtype = relationship_type(item)
-            #raw_rtype = item["Relationship"]['RelationshipType']
-            #return f"XI-LEI-RR-{rtype}-{start}-{end}-{raw_rtype}-{updated}"
             return f"{self.cached_record_id}-{updated}"
         else:
-            #start = item["LEI"]
-            #rtype = exception_type(item)
-            #reason = item['ExceptionReason']
-            #ref = item['ExceptionReference'] if "ExceptionReference" in item else 'None'
-            #return f"XI-LEI-RR-{rtype}-{start}-{reason}-{ref}-{updated}"
             return f"{self.cached_record_id}-{updated}"
 
     def item_closed(self, item, item_type):
         """Is item closed?"""
-        #item_type = self.identify_item(item)
-        #print(item, item_type)
         if item_type == 'entity':
             if "CompanyStatus" in item:
                 if not item["DissolutionDate"]:
                     return False, None
                 else:
                     return True, "retired"
-                #return not "Active" in item["CompanyStatus"], None
             else:
                 if "ceased_on" in item["data"]:
                     return True, "retired"
@@ -856,8 +699,6 @@ class UKCOHSource():
                 return True, "retired"
             else:
                 return False, None
-        #elif item_type == 'exception':
-        #    return True
 
     def name(self, item, item_type):
         """Name for GLEIF item"""
@@ -901,7 +742,6 @@ class UKCOHSource():
             else:
                 country = get_country(self.country_data, item["data"]["identification"]["country_registered"])
                 if country:
-                    #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
                     return country
         if "identification" in item["data"] and "legal_authority" in item["data"]["identification"]:
             if is_local(item["data"]["identification"]["legal_authority"]):
@@ -915,12 +755,10 @@ class UKCOHSource():
                     name = item["data"]["identification"]["legal_authority"].lower()
                 country = get_country(self.country_data, item["data"]["identification"]["legal_authority"])
                 if country:
-                    #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
                     return country
                 else:
                     country = match_demonyms(item["data"]["identification"]["legal_authority"])
                     if country:
-                        #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
                         return country
         if "address" in item["data"] and "country" in item["data"]["address"]:
             if is_local(item["data"]["address"]["country"]):
@@ -928,22 +766,18 @@ class UKCOHSource():
             else:
                 country = get_country(self.country_data, item["data"]["address"]["country"])
                 if country:
-                    #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
                     return country
         if "address" in item["data"] and "locality" in item["data"]["address"]:
             country = get_country(self.country_data, item["data"]["address"]["locality"])
             if country:
-                #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
                 return country
         if "address" in item["data"] and "region" in item["data"]["address"]:
             country = get_country(self.country_data, item["data"]["address"]["region"])
             if country:
-                 #country_code = country.alpha_2 if hasattr(country, "alpha_2") else country.code
                  return country
         if "address" in item["data"]:
             if is_uk_address(item["data"]["address"]):
                 return "GB"
-        #print(item)
         return None
 
     def scheme(self, item, item_type) -> str:
@@ -965,21 +799,6 @@ class UKCOHSource():
         else:
             return None, None, None
 
-    #def scheme_name(self, item) -> str:
-    #    """Get scheme name"""
-    #    if 'CompanyNumber' in item:
-    #        return "Companies House"
-    #    if "identification" in item["data"] and "country_registered" in item["data"]["identification"]:
-    #        if is_local(item["data"]["identification"]["country_registered"]):
-    #            return "Companies House"
-    #        else:
-    #            code, name, structure = infer_scheme(item)
-    #            return code
-
-    #def scheme_url(self, item):
-    #    """Scheme url"""
-    #    return "https://www.gov.uk/government/organisations/companies-house"
-
     def identifier(self, item, item_type) -> str:
         """Get entity identifier"""
         if item_type == "entity":
@@ -998,18 +817,6 @@ class UKCOHSource():
 
     def additional_identifiers(self, item) -> list:
         """Get list of additional identifiers"""
-        #if ("RegistrationAuthority" in item['Entity']
-        #    and "RegistrationAuthorityID" in item['Entity']["RegistrationAuthority"]
-        #    and "RegistrationAuthorityEntityID" in item['Entity']["RegistrationAuthority"]):
-        #    authority = item['Entity']["RegistrationAuthority"]
-        #    scheme_code, scheme_name = get_scheme(authority["RegistrationAuthorityID"],
-        #                                          self.scheme_data,
-        #                                          country_code=item['Entity']['LegalJurisdiction'])
-        #    #print(authority, scheme_code, scheme_name)
-        #    return [{'id': authority["RegistrationAuthorityEntityID"],
-        #            'scheme': scheme_code,
-        #            'schemeName': scheme_name}]
-        #else:
         return []
 
     def creation_date(self, item):
@@ -1027,7 +834,6 @@ class UKCOHSource():
             return None
 
     def _extract_entity_address(self, address, data):
-        #print("Data:", data)
         if "RegAddress_AddressLine1" in data and data["RegAddress_AddressLine1"]:
             address['address1'] = data["RegAddress_AddressLine1"]
         if "RegAddress_AddressLine2" in data and data["RegAddress_AddressLine2"]:
@@ -1052,7 +858,7 @@ class UKCOHSource():
             else:
                 country = get_country(self.country_data, data["RegAddress_Country"])
                 if country:
-                    address['country'] = country #.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    address['country'] = country
                 else:
                     address['country'] = data["RegAddress_Country"]
         if not 'country' in address:
@@ -1088,7 +894,7 @@ class UKCOHSource():
             else:
                 country = get_country(self.country_data, address_data["country"])
                 if country:
-                    address['country'] = country #.alpha_2 if hasattr(country, "alpha_2") else country.code
+                    address['country'] = country
                 else:
                     address['country'] = address_data["country"]
         if not 'country' in address:
@@ -1098,7 +904,6 @@ class UKCOHSource():
     def registered_address(self, item) -> dict:
         """Get registered address"""
         address = {}
-        #print("Data:", item)
         if 'RegAddress_AddressLine1' in item:
             self._extract_entity_address(address, item)
         if "data" in item and "address" in item["data"]:
@@ -1111,7 +916,6 @@ class UKCOHSource():
 
     def create_interested_party(self, item):
         """Create interested party"""
-        #print("In create_interested_party (kind):", item["data"]["kind"])
         if item["data"]["kind"] in ("individual-person-with-significant-control",
                                     "individual-beneficial-owner",
                                     "super-secure-person-with-significant-control",
@@ -1121,9 +925,6 @@ class UKCOHSource():
                                     "corporate-entity-beneficial-owner",
                                     "legal-person-person-with-significant-control",
                                     "legal-person-beneficial-owner"):
-            #if ("identification" in item["data"] and
-            #    "place_registered" in item["data"]["identification"] and
-            #    "Companies House" in item["data"]["identification"]["place_registered"]):
             if is_uk_company(item):
                 return None
             else:
@@ -1147,7 +948,6 @@ class UKCOHSource():
                                     "corporate-entity-beneficial-owner",
                                     "legal-person-person-with-significant-control",
                                     "legal-person-beneficial-owner"):
-                #return f"GB-COH-{item['data']['identification']['registration_number']}"
                 return build_entity_local_id(item)
             elif item["data"]["kind"] in ("individual-person-with-significant-control",
                                     "individual-beneficial-owner",
@@ -1156,26 +956,11 @@ class UKCOHSource():
                 link_id = item['data']['links']['self'].split('/')[-1]
                 company_number = fix_company_number(item['company_number'])
                 return f"GB-COH-PER-{company_number}-{link_id}"
-            #return f"XI-LEI-{item['Relationship']['EndNode']['NodeID']}"
         else:
             return exception_unspecified(item)
 
     def interest_start_date(self, item) -> dict:
         """Get interest start date"""
-        #start_date = False
-        #if 'RelationshipPeriods' in item['Relationship']:
-        #    periods = item['Relationship']['RelationshipPeriods']
-        #    for period in periods:
-        #        if 'StartDate' in period and 'PeriodType' in period:
-        #            if period['PeriodType'] == "RELATIONSHIP_PERIOD":
-        #                interestStartDate = period['StartDate']
-        #            else:
-        #                start_date = period['StartDate']
-        #if not start_date:
-        #    if not interestStartDate: interestStartDate = ""
-        #else:
-        #    if not interestStartDate: interestStartDate = start_date
-        #return interestStartDate.split("T")[0]
         if "notified_on" in item["data"]:
             return item["data"]["notified_on"]
         else:
@@ -1194,7 +979,6 @@ class UKCOHSource():
 
     def interest_level(self, item):
         """Get interest level"""
-        #interestLevel = self._interest_level(item, 'unknown')
         interestLevel = "unknown"
         return interestLevel
 
@@ -1217,17 +1001,13 @@ class UKCOHSource():
                 return f"Relationship Type: {item['data']['natures_of_control']}"
             else:
                 return f"Unknown Relationship Type for {item['data']['kind']}"
-            #return f"Relationship Type: {item['Relationship']['RelationshipType']}"
         else:
             return f"Relationship Type: {item['data']['kind']}"
-            #return f"Exception Category: {item['ExceptionCategory']}"
 
     def source_type(self, item) -> str:
         """Get source type"""
         item_type = self.identify_item(item)
         if item_type == "entity":
-            #return (['officialRegister'] if not item['Registration']['ValidationSources'] ==
-            #     'FULLY_CORROBORATED' else ['officialRegister', 'verified'])
             return ['officialRegister']
         else:
             return ['officialRegister']
@@ -1262,7 +1042,7 @@ class UKCOHSource():
                                     "super-secure-beneficial-owner"):
             return "anonymousPerson"
         else:
-            return "knownPerson" # Alternatives: anonymousPerson unknownPerson
+            return "knownPerson"
 
     def person_nationalities(self, item):
         """Person nationalities"""
@@ -1335,7 +1115,6 @@ class UKCOHSource():
     def annotation_description(self, reason, record_type, record_id):
         """Descriptions for annotations"""
         if reason == "replacement":
-            #record_type = "relationship" if "Relationship" in item else "exception"
             return f"Statement closed due to a new UK PSC {record_type} ({record_id}) replacing this record"
         elif reason == "deletion":
             return "Statement closed due to deletion of UK PSC record"

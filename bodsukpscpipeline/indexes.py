@@ -145,8 +145,8 @@ def id_psc(item):
 
 # Elasticsearch indexes for UK PSC data
 uk_psc_index_properties = {"uk_company": {"properties": uk_company_properties,
-                                         "match": match_company,
-                                         "id": id_company},
+                                          "match": match_company,
+                                          "id": id_company},
                           "uk_psc": {"properties": uk_psc_properties,
-                                  "match": match_psc,
-                                  "id": id_psc}}
+                                     "match": match_psc,
+                                     "id": id_psc}}
