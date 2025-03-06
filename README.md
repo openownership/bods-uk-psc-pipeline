@@ -40,10 +40,10 @@ repository, which is a shared library intended to support all BODS pipelines in 
 
 ## Ingest Stage
 
-The Ingest pipeline stage downloads the 
-[GLEIF Concatenated Files](https://www.gleif.org/en/lei-data/gleif-concatenated-file/download-the-concatenated-file)
-and parses XML data to JSON which written to a Kinesis data stream. The uncompressed UK Companies House data takes
-up approximately 12GB of diskspace.
+The Ingest pipeline stage downloads the [UK Companies House Basic Company Data](https://download.companieshouse.gov.uk/en_output.html)
+and the [UK Companies House Persons With Significant Control](https://download.companieshouse.gov.uk/en_pscdata.html)
+and parses the CSV/JSON data, augments it and writes it to JSON which written to a Kinesis data stream (as well as
+being storage in Elasticsearch). The uncompressed UK Companies House data takes up approximately 12GB of diskspace.
 
 ## Transform Stage
 
