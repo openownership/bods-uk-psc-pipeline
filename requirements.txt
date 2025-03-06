@@ -1,9 +1,5 @@
 pytest==7.2.2
 pytest-docker-compose-v2==0.1.1
 pytest-asyncio==0.21.1
-#-e ../../bods_0.4_gleif/bodspipelines
-#-e git+https://github.com/openownership/bodspipelines@bods_0_4_new#egg=bodspipelines
-#-e git+https://github.com/openownership/bods-uk-psc-pipeline#egg=uk_psc_pipeline
-#-e git+ssh://git@github.com/openownership/bods-uk-psc-pipeline#egg=bodsukpscpipeline
--e git+https://github.com/openownership/bodspipelines@bods_0_4_new#egg=bodspipelines
+-e git+https://github.com/openownership/bodspipelines@main#egg=bodspipelines
 -e .
